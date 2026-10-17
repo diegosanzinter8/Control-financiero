@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mi Control Financiero</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Firebase App & Firestore SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -83,26 +87,23 @@
       color: var(--gold-light);
     }
 
-    .header-btns {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-action {
-      background: var(--bg-input);
-      color: var(--gold);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 12px;
-      font-size: 0.78rem;
-      cursor: pointer;
+    .cloud-status {
+      font-size: 0.75rem;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
       font-weight: 600;
-      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .btn-action:hover {
-      border-color: var(--gold);
-      box-shadow: 0 0 8px var(--gold-glow);
+    .cloud-status.syncing {
+      background: rgba(212, 175, 55, 0.12);
+      color: var(--gold);
+      border-color: rgba(212, 175, 55, 0.3);
     }
 
     main {
@@ -307,7 +308,7 @@
       box-shadow: 0 4px 20px rgba(212, 175, 55, 0.45);
     }
 
-    /* Asesor Financiero & Regla 50/30/20 */
+    /* Asesor Financiero */
     .advisor-header {
       background: linear-gradient(135deg, #1B1808, #141208);
       border: 1px solid rgba(212, 175, 55, 0.4);
@@ -348,10 +349,6 @@
       width: 100%;
       margin: 16px 0 10px;
       box-shadow: 0 4px 16px var(--gold-glow);
-    }
-
-    .btn-report:hover {
-      box-shadow: 0 4px 22px rgba(212, 175, 55, 0.45);
     }
 
     .rule-box {
@@ -416,23 +413,12 @@
       font-size: 0.9rem;
     }
 
-    .advice-card.alert {
-      border-left-color: var(--red);
-    }
+    .advice-card.alert { border-left-color: var(--red); }
+    .advice-card.alert strong { color: #FF8A80; }
+    .advice-card.success { border-left-color: var(--green); }
+    .advice-card.success strong { color: #A7F3D0; }
 
-    .advice-card.alert strong {
-      color: #FF8A80;
-    }
-
-    .advice-card.success {
-      border-left-color: var(--green);
-    }
-
-    .advice-card.success strong {
-      color: #A7F3D0;
-    }
-
-    /* Modal Informe Profesional */
+    /* Modal Informe */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -445,9 +431,7 @@
       padding: 16px;
     }
 
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
 
     .modal-content {
       background: #141414;
@@ -569,29 +553,10 @@
     }
 
     /* Tabla Historial */
-    .table-responsive {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.86rem;
-    }
-
-    th {
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-      color: var(--gold);
-      font-size: 0.78rem;
-      text-transform: uppercase;
-    }
-
-    td {
-      padding: 12px;
-      border-bottom: 1px solid var(--border);
-    }
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--gold); font-size: 0.78rem; text-transform: uppercase; }
+    td { padding: 12px; border-bottom: 1px solid var(--border); }
 
     .badge-medio {
       padding: 3px 8px;
@@ -602,15 +567,8 @@
       background: #181818;
     }
 
-    .badge-efectivo {
-      color: var(--gold);
-      border-color: rgba(212, 175, 55, 0.4);
-    }
-
-    .badge-tarjeta {
-      color: #60A5FA;
-      border-color: rgba(96, 165, 250, 0.4);
-    }
+    .badge-efectivo { color: var(--gold); border-color: rgba(212, 175, 55, 0.4); }
+    .badge-tarjeta { color: #60A5FA; border-color: rgba(96, 165, 250, 0.4); }
 
     .btn-del {
       background: none;
@@ -622,9 +580,7 @@
       padding: 4px;
     }
 
-    .btn-del:hover {
-      opacity: 1;
-    }
+    .btn-del:hover { opacity: 1; }
 
     .charts-row {
       display: grid;
@@ -666,16 +622,8 @@
       transition: all 0.2s;
     }
 
-    .nav-item.active {
-      color: var(--gold);
-    }
-
-    .empty-msg {
-      text-align: center;
-      padding: 30px 10px;
-      color: var(--text-muted);
-      font-size: 0.88rem;
-    }
+    .nav-item.active { color: var(--gold); }
+    .empty-msg { text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 0.88rem; }
   </style>
 </head>
 <body>
@@ -685,22 +633,18 @@
       <div class="brand-icon">🪙</div>
       <div class="brand-title">Mi Control Financiero</div>
     </div>
-    <div class="header-btns">
-      <button class="btn-action" onclick="exportData()" title="Descarga una copia de seguridad">💾 Guardar Copia</button>
-      <label class="btn-action" style="cursor:pointer;" title="Restaura una copia previa">
-        📂 Cargar Datos
-        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
-      </label>
+    <div class="cloud-status" id="cloud-indicator">
+      <span>●</span> <span id="cloud-text">Nube Conectada</span>
     </div>
   </header>
 
   <main>
 
-    <!-- PESTAÑA 1: BALANCES PRINCIPALES (SÓLO LO ESENCIAL) -->
+    <!-- PESTAÑA 1: BALANCES PRINCIPALES -->
     <section id="view-home" class="tab-view active">
 
       <div class="adjust-bar">
-        <span>⚙️ <strong>Saldos iniciales:</strong> Pon el dinero que tienes en cuenta y en mano:</span>
+        <span>⚙️ <strong>Saldos iniciales:</strong> Pon el dinero que tienes en cuenta y mano:</span>
         <button onclick="setInitialFunds()">Ajustar Saldos Actuales</button>
       </div>
 
@@ -753,7 +697,7 @@
 
     </section>
 
-    <!-- PESTAÑA 2: ASESOR FINANCIERO Y ANÁLISIS 50/30/20 -->
+    <!-- PESTAÑA 2: ASESOR FINANCIERO -->
     <section id="view-advisor" class="tab-view">
 
       <div class="advisor-header">
@@ -766,7 +710,6 @@
         </button>
       </div>
 
-      <!-- Semáforo de Regla 50/30/20 -->
       <div class="rule-box">
         <div class="rule-title">
           <span>Estructura de Gasto Mensual (Regla 50 / 30 / 20)</span>
@@ -793,15 +736,12 @@
         </div>
       </div>
 
-      <!-- Consejos y Diagnósticos Automáticos -->
       <div class="card">
         <div class="card-header">Diagnósticos y Recomendaciones Clave</div>
         <div id="advisor-tips-container">
-          <!-- Consejos inteligentes dinámicos -->
         </div>
       </div>
 
-      <!-- Gráficos Analíticos -->
       <div class="charts-row">
         <div class="card">
           <div class="card-header">Distribución por Categorías</div>
@@ -912,12 +852,11 @@
         </div>
       </div>
 
-      <!-- Zona de Reset Oculta y Protegida -->
       <div class="hidden-zone">
         <details>
           <summary>⚙️ Opciones avanzadas de mantenimiento / Reinicio</summary>
           <p style="font-size:0.75rem; color:#777; margin-top:8px;">
-            Esta acción restablecerá tus saldos iniciales y borrará el historial para empezar un año o periodo nuevo desde cero.
+            Esta acción restablecerá tus saldos iniciales y borrará el historial en la nube para empezar desde cero.
           </p>
           <button class="btn-danger-hidden" onclick="resetAllToZero()">⚠️ Borrar todo y poner a Cero</button>
         </details>
@@ -926,7 +865,7 @@
 
   </main>
 
-  <!-- Modal Informe Ejecutivo -->
+  <!-- Modal Informe -->
   <div class="modal-overlay" id="modal-report" onclick="cerrarInforme(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
       <span class="report-badge">AUDITORÍA FINANCIERA EJECUTIVA</span>
@@ -934,7 +873,6 @@
         Informe Financiero Mensual
       </h2>
       <div id="report-body" style="font-size:0.86rem; line-height:1.6; color:var(--text);">
-        <!-- Generado dinámicamente -->
       </div>
       <button class="btn-submit" style="margin-top:18px;" onclick="document.getElementById('modal-report').classList.remove('active')">
         Cerrar Informe
@@ -942,7 +880,7 @@
     </div>
   </div>
 
-  <!-- Navegación Inferior de 5 Pestañas -->
+  <!-- Navegación Inferior -->
   <nav>
     <button class="nav-item active" onclick="cambiarPestana('home')">
       <span>📊</span>
@@ -967,6 +905,21 @@
   </nav>
 
   <script>
+    // CONFIGURACIÓN DE FIREBASE (SINCRONIZACIÓN EN TIEMPO REAL)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLfKa1piF3hRJcsqY_6dcSlhCe0ZaDouY",
+      authDomain: "finanzas-5dd38.firebaseapp.com",
+      projectId: "finanzas-5dd38",
+      storageBucket: "finanzas-5dd38.firebasestorage.app",
+      messagingSenderId: "469939260454",
+      appId: "1:469939260454:web:221f8fd3fd68ac8ce96ae7",
+      measurementId: "G-Z9L3HPT3WS"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const docRef = db.collection("datos_usuario").doc("diego_finanzas");
+
     let tipoActual = 'gasto';
     let movimientos = [];
     let saldoBase = { tarjeta: 0.00, efectivo: 0.00 };
@@ -1021,27 +974,68 @@
       return (num || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
     }
 
+    // SINCRONIZACIÓN EN TIEMPO REAL CON FIRESTORE
     window.addEventListener('DOMContentLoaded', () => {
-      // Inicia con la fecha exacta de hoy
       document.getElementById('in-fecha').value = getFechaHoyISO();
-      cargarDatosStorage();
       actualizarCategoriasSelect();
+
+      // Cargar caché local primero para rapidez
+      const cachedMovs = localStorage.getItem('app_finanzas_movimientos');
+      const cachedBase = localStorage.getItem('app_finanzas_base');
+      const cachedMetas = localStorage.getItem('app_finanzas_metas');
+      if (cachedMovs) movimientos = JSON.parse(cachedMovs);
+      if (cachedBase) saldoBase = JSON.parse(cachedBase);
+      if (cachedMetas) metas = JSON.parse(cachedMetas);
       refrescarTodo();
+
+      // Escuchar cambios en la nube en tiempo real
+      docRef.onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.saldoBase) saldoBase = data.saldoBase;
+          if (data.movimientos) movimientos = data.movimientos;
+          if (data.metas) metas = data.metas;
+
+          localStorage.setItem('app_finanzas_movimientos', JSON.stringify(movimientos));
+          localStorage.setItem('app_finanzas_base', JSON.stringify(saldoBase));
+          localStorage.setItem('app_finanzas_metas', JSON.stringify(metas));
+
+          refrescarTodo();
+          mostrarEstadoNube('Nube Conectada', false);
+        } else {
+          guardarEnCloud();
+        }
+      }, (error) => {
+        console.error("Error en Firebase:", error);
+        mostrarEstadoNube('Modo Local', true);
+      });
     });
 
-    function cargarDatosStorage() {
-      const savedMovs = localStorage.getItem('app_finanzas_movimientos');
-      const savedBase = localStorage.getItem('app_finanzas_base');
-      const savedMetas = localStorage.getItem('app_finanzas_metas');
-      if (savedMovs) movimientos = JSON.parse(savedMovs);
-      if (savedBase) saldoBase = JSON.parse(savedBase);
-      if (savedMetas) metas = JSON.parse(savedMetas);
-    }
-
-    function guardarEnStorage() {
+    function guardarEnCloud() {
+      mostrarEstadoNube('Sincronizando...', true);
       localStorage.setItem('app_finanzas_movimientos', JSON.stringify(movimientos));
       localStorage.setItem('app_finanzas_base', JSON.stringify(saldoBase));
       localStorage.setItem('app_finanzas_metas', JSON.stringify(metas));
+
+      docRef.set({
+        saldoBase,
+        movimientos,
+        metas,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        mostrarEstadoNube('Nube Conectada', false);
+      }).catch(err => {
+        console.error("Error guardando en la nube:", err);
+        mostrarEstadoNube('Error de Red', true);
+      });
+    }
+
+    function mostrarEstadoNube(texto, syncing) {
+      const el = document.getElementById('cloud-indicator');
+      const txt = document.getElementById('cloud-text');
+      txt.textContent = texto;
+      if (syncing) el.classList.add('syncing');
+      else el.classList.remove('syncing');
     }
 
     function setInitialFunds() {
@@ -1051,21 +1045,19 @@
       const cashStr = prompt('Dinero actual en EFECTIVO (€):', String(saldoBase.efectivo).replace('.', ','));
       if (cashStr !== null) saldoBase.efectivo = parseDinero(cashStr);
 
-      guardarEnStorage();
+      guardarEnCloud();
       refrescarTodo();
     }
 
     function resetAllToZero() {
-      const confirmacion = prompt('Escribe "RESET" en mayúsculas para confirmar que deseas borrar todos los registros y poner tus cuentas a cero:');
+      const confirmacion = prompt('Escribe "RESET" en mayúsculas para borrar todo y poner tus cuentas a cero:');
       if (confirmacion === 'RESET') {
         movimientos = [];
         saldoBase = { tarjeta: 0.00, efectivo: 0.00 };
         metas.forEach(m => m.current = 0);
-        guardarEnStorage();
+        guardarEnCloud();
         refrescarTodo();
-        alert('Cuentas restablecidas a cero con éxito.');
-      } else {
-        alert('Acción cancelada. Tus datos están intactos.');
+        alert('Cuentas restablecidas a cero.');
       }
     }
 
@@ -1134,35 +1126,34 @@
       };
 
       movimientos.unshift(nuevo);
-      guardarEnStorage();
+      guardarEnCloud();
 
       document.getElementById('in-importe').value = '';
       document.getElementById('in-concepto').value = '';
 
-      alert('¡Movimiento guardado con éxito!');
+      alert('¡Movimiento guardado y sincronizado!');
       cambiarPestana('home');
     }
 
     function eliminarMovimiento(id) {
       if (confirm('¿Eliminar este movimiento?')) {
         movimientos = movimientos.filter(m => m.id !== id);
-        guardarEnStorage();
+        guardarEnCloud();
         refrescarTodo();
       }
     }
 
-    // Metas
     function nuevaMeta() {
       const nombre = prompt('Nombre de la Meta (1 palabra, ej: Emergencia, Viaje, Coche):');
       if (!nombre) return;
-      const ubicacion = prompt('¿Dónde guardas este dinero? (ej: En cuenta de ahorro, En efectivo en bote, En broker):', 'Cuenta de ahorro');
+      const ubicacion = prompt('¿Dónde guardas este dinero? (ej: En cuenta de ahorro, En efectivo en bote):', 'Cuenta de ahorro');
       if (!ubicacion) return;
       const objetivoStr = prompt('Objetivo en total (€):', '500');
       const objetivo = parseDinero(objetivoStr);
       if (objetivo <= 0) return;
 
       metas.push({ id: 'goal_' + Date.now(), name: nombre, location: ubicacion, target: objetivo, current: 0 });
-      guardarEnStorage();
+      guardarEnCloud();
       renderMetas();
     }
 
@@ -1172,7 +1163,7 @@
       const nuevaUbi = prompt(`¿Dónde guardas el dinero para "${meta.name}"?`, meta.location || 'Cuenta de ahorro');
       if (nuevaUbi !== null && nuevaUbi.trim() !== '') {
         meta.location = nuevaUbi.trim();
-        guardarEnStorage();
+        guardarEnCloud();
         renderMetas();
       }
     }
@@ -1180,20 +1171,20 @@
     function aportarMeta(id) {
       const meta = metas.find(m => m.id === id);
       if (!meta) return;
-      const cantStr = prompt(`¿Cuánto quieres añadir o retirar de "${meta.name}"? (Escribe con coma o punto, ej: 50,50):`, '50');
+      const cantStr = prompt(`¿Cuánto quieres añadir o retirar de "${meta.name}"? (Ej: 50 o -20):`, '50');
       if (cantStr === null) return;
       const cant = parseDinero(cantStr);
       if (cant === 0) return;
 
       meta.current = Math.max(0, meta.current + cant);
-      guardarEnStorage();
+      guardarEnCloud();
       renderMetas();
     }
 
     function eliminarMeta(id) {
       if (confirm('¿Eliminar esta meta?')) {
         metas = metas.filter(m => m.id !== id);
-        guardarEnStorage();
+        guardarEnCloud();
         renderMetas();
       }
     }
@@ -1203,7 +1194,7 @@
       container.innerHTML = '';
 
       if (metas.length === 0) {
-        container.innerHTML = '<div class="empty-msg">No tienes metas creadas. Haz clic en "+ Nueva Meta" para empezar.</div>';
+        container.innerHTML = '<div class="empty-msg">No tienes metas creadas. Haz clic en "+ Nueva Meta".</div>';
         return;
       }
 
@@ -1234,7 +1225,6 @@
       });
     }
 
-    // Cálculos y Refresco
     function refrescarTodo() {
       let saldoTarjeta = saldoBase.tarjeta;
       let saldoEfectivo = saldoBase.efectivo;
@@ -1311,45 +1301,41 @@
       document.getElementById('lbl-wants-val').textContent = `${formatEUR(wants)} (${pctWants}%)`;
       document.getElementById('lbl-savings-val').textContent = `${formatEUR(savings)} (${pctSavings}%)`;
 
-      // Consejos y diagnósticos del asesor financiero
       const tipsBox = document.getElementById('advisor-tips-container');
       tipsBox.innerHTML = '';
 
-      // Diagnóstico 1: Tasa de Ahorro
       if (ingresos === 0) {
         tipsBox.innerHTML += `
           <div class="advice-card">
             <strong>📋 Registro de Flujo Mensual</strong>
-            No has anotado ingresos este mes aún. En cuanto anotes tu nómina, cobros o partidos, calcularemos tu porcentaje de ahorro real.
+            No has anotado ingresos este mes aún. Anota tu nómina, cobros o partidos para calcular ratios.
           </div>
         `;
       } else if (pctSavings >= 20) {
         tipsBox.innerHTML += `
           <div class="advice-card success">
             <strong>🌟 Tasa de Ahorro Saludable (${pctSavings}%)</strong>
-            Estás cumpliendo el estándar de oro financiero (>20%). Recomendación: transfiere ese excedente (${formatEUR(savings)}) directamente a tu hucha de Emergencia o inversión antes de final de mes para evitar el efecto 'gasto fantasma'.
+            Cumples el estándar de oro financiero (>20%). Recomendación: transfiere el excedente (${formatEUR(savings)}) a tu hucha de Emergencia.
           </div>
         `;
       } else {
         tipsBox.innerHTML += `
           <div class="advice-card alert">
             <strong>⚠️ Capacidad de Ahorro Comprometida (${pctSavings}%)</strong>
-            Tu tasa de ahorro mensual está por debajo del 20% recomendado. Tienes margen para recortar en partidas discrecionales de ocio o restaurantes para recuperar al menos 100-150 € este mes.
+            Tasa por debajo del 20%. Ajusta ocio o restaurantes para recuperar margen.
           </div>
         `;
       }
 
-      // Diagnóstico 2: Fugas de Ocio / Deseos
       if (pctWants > 30) {
         tipsBox.innerHTML += `
           <div class="advice-card alert">
             <strong>🚨 Presupuesto de Estilo de Vida Superado (${pctWants}%)</strong>
-            Tus gastos en ocio, restaurantes, compras o deporte superan el 30% de tus ingresos. Fija un tope semanal para el fin de semana para no ahogar tu liquidez.
+            Tus gastos discrecionales superan el 30% de tus ingresos. Fija un tope semanal para el fin de semana.
           </div>
         `;
       }
 
-      // Diagnóstico 3: Categoría con mayor fuga
       let maxCat = '';
       let maxCatVal = 0;
       Object.keys(catsGastos).forEach(cat => {
@@ -1363,13 +1349,12 @@
         tipsBox.innerHTML += `
           <div class="advice-card">
             <strong>🔍 Mayor Fuga Detectada: "${maxCat}"</strong>
-            Representa ${formatEUR(maxCatVal)} de tus gastos. Evalúa si este desembolso es recurrente u ocasional para presupuestarlo mejor el mes siguiente.
+            Representa ${formatEUR(maxCatVal)}. Evalúa si es recurrente u ocasional.
           </div>
         `;
       }
     }
 
-    // Informe Profesional Emergente
     function generarInformeEjecutivo() {
       const mesActual = new Date().toISOString().slice(0, 7);
       const totalGlobal = saldoBase.tarjeta + saldoBase.efectivo;
@@ -1418,16 +1403,16 @@
 
         <h3 style="color:var(--gold); font-size:0.95rem; margin-bottom:8px;">2. Desglose Estratégico (Regla 50/30/20)</h3>
         <p style="margin-bottom:6px;">
-          • <strong>Necesidades Básicas:</strong> ${formatEUR(needs)} (${ingresosMes > 0 ? Math.round((needs/ingresosMes)*100) : 0}%) - Tope recomendado: 50%<br>
-          • <strong>Deseos y Ocio:</strong> ${formatEUR(wants)} (${ingresosMes > 0 ? Math.round((wants/ingresosMes)*100) : 0}%) - Tope recomendado: 30%<br>
+          • <strong>Necesidades Básicas:</strong> ${formatEUR(needs)} (${ingresosMes > 0 ? Math.round((needs/ingresosMes)*100) : 0}%) - Tope: 50%<br>
+          • <strong>Deseos y Ocio:</strong> ${formatEUR(wants)} (${ingresosMes > 0 ? Math.round((wants/ingresosMes)*100) : 0}%) - Tope: 30%<br>
           • <strong>Margen para Capitalizar:</strong> ${formatEUR(Math.max(0, superavit))}
         </p>
 
         <h3 style="color:var(--gold); font-size:0.95rem; margin-top:14px; margin-bottom:8px;">3. Recomendaciones del Asesor</h3>
         <div style="background:#181818; padding:12px; border-radius:8px; border-left:3px solid var(--gold);">
           ${superavit > 0 
-            ? `Dispones de un superávit de <strong>${formatEUR(superavit)}</strong>. Te sugiero destinar un 70% a tu meta de Emergencia y un 30% a proyectos o viajes para mantener alta motivación de ahorro.` 
-            : `Actualmente tus gastos igualan o superan tus ingresos este mes. Congela gastos en Restaurantes y Ocio las próximas 2 semanas para cerrar en positivo.`}
+            ? `Dispones de un superávit de <strong>${formatEUR(superavit)}</strong>. Te sugiero destinar un 70% a tu meta de Emergencia y un 30% a proyectos o viajes.` 
+            : `Actualmente tus gastos igualan o superan tus ingresos este mes. Congela gastos discrecionales las próximas 2 semanas.`}
         </div>
       `;
 
@@ -1440,7 +1425,6 @@
     }
 
     function renderTablas() {
-      // 1. Tabla de Recientes en Página Principal (solo los últimos 4)
       const tbodyRecientes = document.getElementById('tabla-recientes');
       tbodyRecientes.innerHTML = '';
       const ultimos = movimientos.slice(0, 4);
@@ -1463,7 +1447,6 @@
         });
       }
 
-      // 2. Tabla de Historial Completo
       const tbody = document.getElementById('tabla-cuerpo');
       tbody.innerHTML = '';
       document.getElementById('tx-count').textContent = `${movimientos.length} movimiento(s)`;
@@ -1513,9 +1496,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom', labels: { color: '#9E9E9E', font: { size: 10 } } }
-          },
+          plugins: { legend: { position: 'bottom', labels: { color: '#9E9E9E', font: { size: 10 } } } },
           cutout: '70%'
         }
       });
@@ -1543,37 +1524,6 @@
           plugins: { legend: { display: false } }
         }
       });
-    }
-
-    function exportData() {
-      const data = { saldoBase, movimientos, metas };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `mi_control_financiero_${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.saldoBase) saldoBase = data.saldoBase;
-          if (data.movimientos) movimientos = data.movimientos;
-          if (data.metas) metas = data.metas;
-          guardarEnStorage();
-          refrescarTodo();
-          alert('¡Copia de seguridad restaurada correctamente!');
-        } catch (err) {
-          alert('Error al leer el archivo JSON.');
-        }
-      };
-      reader.readAsText(file);
     }
   </script>
 </body>
