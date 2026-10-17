@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mi Control Financiero</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-black: #080808;
+      --bg-card: #121212;
+      --bg-card-hover: #191919;
+      --bg-input: #1A1A1A;
+      --border: #242424;
+      --gold: #D4AF37;
+      --gold-light: #F3E5AB;
+      --gold-glow: rgba(212, 175, 55, 0.22);
+      --red: #E53935;
+      --red-glow: rgba(229, 57, 53, 0.22);
+      --blue: #3B82F6;
+      --green: #10B981;
+      --purple: #8B5CF6;
+      --text: #F5F5F5;
+      --text-muted: #9E9E9E;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-black);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 95px;
+    }
+
+    header {
+      background: rgba(18, 18, 18, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--gold), #997A15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: #000;
+      box-shadow: 0 0 14px var(--gold-glow);
+    }
+
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--gold-light);
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background: var(--bg-input);
+      color: var(--gold);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 8px var(--gold-glow);
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 18px 14px;
+    }
+
+    .tab-view {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .tab-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card-header {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .balances-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .balance-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      position: relative;
+    }
+
+    .balance-box.gold-border { border-top: 3px solid var(--gold); }
+    .balance-box.red-border { border-top: 3px solid var(--red); }
+
+    .balance-title {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .balance-amount {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .gold-text { color: var(--gold); }
+    .red-text { color: var(--red); }
+    .green-text { color: var(--green); }
+
+    .adjust-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: #151515;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      border: 1px dashed var(--border);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .adjust-bar span {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .adjust-bar button {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Formulario */
+    .selector-tipo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .btn-tipo {
+      padding: 14px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-tipo.active.gasto {
+      border-color: var(--red);
+      background: rgba(229, 57, 53, 0.12);
+      color: var(--red);
+      box-shadow: 0 0 14px var(--red-glow);
+    }
+
+    .btn-tipo.active.ingreso {
+      border-color: var(--gold);
+      background: rgba(212, 175, 55, 0.12);
+      color: var(--gold);
+      box-shadow: 0 0 14px var(--gold-glow);
+    }
+
+    .input-group {
+      margin-bottom: 14px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .input-control {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .input-control:focus {
+      border-color: var(--gold);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 580px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold), #A47E1B);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 15px var(--gold-glow);
+      transition: all 0.2s;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.45);
+    }
+
+    /* Asesor Financiero & Regla 50/30/20 */
+    .advisor-header {
+      background: linear-gradient(135deg, #1B1808, #141208);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .advisor-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .advisor-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .btn-report {
+      background: linear-gradient(135deg, var(--gold), #C59B27);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      margin: 16px 0 10px;
+      box-shadow: 0 4px 16px var(--gold-glow);
+    }
+
+    .btn-report:hover {
+      box-shadow: 0 4px 22px rgba(212, 175, 55, 0.45);
+    }
+
+    .rule-box {
+      background: #141414;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 18px;
+    }
+
+    .rule-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .rule-bar {
+      display: flex;
+      height: 14px;
+      border-radius: 7px;
+      overflow: hidden;
+      background: #222;
+      margin-bottom: 12px;
+    }
+
+    .rule-seg-needs { background: #3B82F6; transition: width 0.3s; }
+    .rule-seg-wants { background: var(--red); transition: width 0.3s; }
+    .rule-seg-savings { background: var(--gold); transition: width 0.3s; }
+
+    .rule-legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      font-size: 0.78rem;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+
+    .advice-card {
+      background: #151515;
+      border-left: 4px solid var(--gold);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .advice-card strong {
+      color: var(--gold-light);
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
+
+    .advice-card.alert {
+      border-left-color: var(--red);
+    }
+
+    .advice-card.alert strong {
+      color: #FF8A80;
+    }
+
+    .advice-card.success {
+      border-left-color: var(--green);
+    }
+
+    .advice-card.success strong {
+      color: #A7F3D0;
+    }
+
+    /* Modal Informe Profesional */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #141414;
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 16px;
+      max-width: 650px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    }
+
+    .report-badge {
+      display: inline-block;
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--gold);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    /* Metas */
+    .goal-card {
+      background: #171717;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .goal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .goal-where-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(212, 175, 55, 0.12);
+      color: var(--gold);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .goal-progress-bg {
+      height: 8px;
+      background: #252525;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .goal-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), #FFF);
+      border-radius: 4px;
+    }
+
+    .goal-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .btn-sm-gold {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.76rem;
+    }
+
+    /* Zona Escondida de Reset */
+    .hidden-zone {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #1C1C1C;
+      text-align: center;
+    }
+
+    .hidden-zone details summary {
+      color: #555;
+      font-size: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .btn-danger-hidden {
+      margin-top: 12px;
+      background: transparent;
+      color: #772222;
+      border: 1px dashed #441818;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .btn-danger-hidden:hover {
+      background: #250B0B;
+      color: var(--red);
+      border-color: var(--red);
+    }
+
+    /* Tabla Historial */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--gold);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .badge-medio {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: #181818;
+    }
+
+    .badge-efectivo {
+      color: var(--gold);
+      border-color: rgba(212, 175, 55, 0.4);
+    }
+
+    .badge-tarjeta {
+      color: #60A5FA;
+      border-color: rgba(96, 165, 250, 0.4);
+    }
+
+    .btn-del {
+      background: none;
+      border: none;
+      color: var(--red);
+      cursor: pointer;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      padding: 4px;
+    }
+
+    .btn-del:hover {
+      opacity: 1;
+    }
+
+    .charts-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .chart-box {
+      position: relative;
+      height: 240px;
+      width: 100%;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(14, 14, 14, 0.98);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 10px 14px;
+      z-index: 100;
+    }
+
+    .nav-item {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.74rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .nav-item.active {
+      color: var(--gold);
+    }
+
+    .empty-msg {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🪙</div>
+      <div class="brand-title">Mi Control Financiero</div>
+    </div>
+    <div class="header-btns">
+      <button class="btn-action" onclick="exportData()" title="Descarga una copia de seguridad">💾 Guardar Copia</button>
+      <label class="btn-action" style="cursor:pointer;" title="Restaura una copia previa">
+        📂 Cargar Datos
+        <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
+      </label>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- PESTAÑA 1: BALANCES PRINCIPALES (SÓLO LO ESENCIAL) -->
+    <section id="view-home" class="tab-view active">
+
+      <div class="adjust-bar">
+        <span>⚙️ <strong>Saldos iniciales:</strong> Pon el dinero que tienes en cuenta y en mano:</span>
+        <button onclick="setInitialFunds()">Ajustar Saldos Actuales</button>
+      </div>
+
+      <div class="balances-grid">
+        <div class="balance-box gold-border">
+          <div class="balance-title">💰 PATRIMONIO TOTAL DISPONIBLE</div>
+          <div class="balance-amount gold-text" id="kpi-total-global">0,00 €</div>
+        </div>
+        <div class="balance-box">
+          <div class="balance-title">💳 TOTAL EN TARJETA / CUENTA</div>
+          <div class="balance-amount" id="kpi-total-tarjeta">0,00 €</div>
+        </div>
+        <div class="balance-box">
+          <div class="balance-title">💵 TOTAL EN EFECTIVO</div>
+          <div class="balance-amount" id="kpi-total-efectivo">0,00 €</div>
+        </div>
+      </div>
+
+      <div class="balances-grid">
+        <div class="balance-box">
+          <div class="balance-title">📈 BENEFICIOS / INGRESOS (ESTE MES)</div>
+          <div class="balance-amount gold-text" id="kpi-mes-ingresos">+0,00 €</div>
+        </div>
+        <div class="balance-box red-border">
+          <div class="balance-title">📉 GASTOS REALIZADOS (ESTE MES)</div>
+          <div class="balance-amount red-text" id="kpi-mes-gastos">-0,00 €</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 14px;">
+        <div class="card-header">
+          <span>Últimos Movimientos Rápidos</span>
+          <a href="javascript:void(0)" onclick="cambiarPestana('history')" style="color:var(--gold); font-size:0.8rem; text-decoration:none;">Ver todo el historial →</a>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Categoría</th>
+                <th style="text-align: right;">Importe</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-recientes">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- PESTAÑA 2: ASESOR FINANCIERO Y ANÁLISIS 50/30/20 -->
+    <section id="view-advisor" class="tab-view">
+
+      <div class="advisor-header">
+        <div class="advisor-title">🏛️ Asesor Patrimonial & Estrategia 50/30/20</div>
+        <div class="advisor-subtitle">
+          Análisis cuantitativo de tus flujos mensuales para maximizar ahorro, evitar fugas de capital y optimizar tus excedentes.
+        </div>
+        <button class="btn-report" onclick="generarInformeEjecutivo()">
+          📑 Generar Informe Financiero Completo
+        </button>
+      </div>
+
+      <!-- Semáforo de Regla 50/30/20 -->
+      <div class="rule-box">
+        <div class="rule-title">
+          <span>Estructura de Gasto Mensual (Regla 50 / 30 / 20)</span>
+          <span id="advisor-rule-badge" style="color:var(--gold); font-size:0.8rem; font-weight:700;">Mes Actual</span>
+        </div>
+        <div class="rule-bar">
+          <div id="bar-needs" class="rule-seg-needs" style="width: 0%;"></div>
+          <div id="bar-wants" class="rule-seg-wants" style="width: 0%;"></div>
+          <div id="bar-savings" class="rule-seg-savings" style="width: 0%;"></div>
+        </div>
+        <div class="rule-legend">
+          <div>
+            <span><span class="dot" style="background:#3B82F6;"></span><strong>Necesidades (50% max):</strong></span>
+            <div id="lbl-needs-val" style="color:#60A5FA; font-weight:700; margin-top:2px;">0,00 € (0%)</div>
+          </div>
+          <div>
+            <span><span class="dot" style="background:var(--red);"></span><strong>Deseos (30% max):</strong></span>
+            <div id="lbl-wants-val" style="color:var(--red); font-weight:700; margin-top:2px;">0,00 € (0%)</div>
+          </div>
+          <div>
+            <span><span class="dot" style="background:var(--gold);"></span><strong>Ahorro (20% min):</strong></span>
+            <div id="lbl-savings-val" style="color:var(--gold); font-weight:700; margin-top:2px;">0,00 € (0%)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consejos y Diagnósticos Automáticos -->
+      <div class="card">
+        <div class="card-header">Diagnósticos y Recomendaciones Clave</div>
+        <div id="advisor-tips-container">
+          <!-- Consejos inteligentes dinámicos -->
+        </div>
+      </div>
+
+      <!-- Gráficos Analíticos -->
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-header">Distribución por Categorías</div>
+          <div class="chart-box">
+            <canvas id="chartCategorias"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">Gasto Efectivo vs. Tarjeta / Banco</div>
+          <div class="chart-box">
+            <canvas id="chartMedios"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- PESTAÑA 3: REGISTRO RÁPIDO -->
+    <section id="view-add" class="tab-view">
+      <div class="card" style="max-width: 580px; margin: 0 auto;">
+        <div class="card-header">Nuevo Registro de Dinero</div>
+
+        <div class="selector-tipo">
+          <button type="button" class="btn-tipo active gasto" id="btn-tipo-gasto" onclick="setTipo('gasto')">
+            📉 He Gastado
+          </button>
+          <button type="button" class="btn-tipo ingreso" id="btn-tipo-ingreso" onclick="setTipo('ingreso')">
+            📈 He Ingresado
+          </button>
+        </div>
+
+        <form id="form-movimiento" onsubmit="guardarMovimiento(event)">
+          <div class="input-group">
+            <label class="input-label">Importe (€) *</label>
+            <input type="text" inputmode="decimal" class="input-control" id="in-importe" placeholder="Ej: 1512,97 o 1512.97" required style="font-size: 1.5rem; font-weight:800; color:var(--gold);">
+          </div>
+
+          <div class="grid-2">
+            <div class="input-group">
+              <label class="input-label">¿Por dónde entra / sale? *</label>
+              <select class="input-control" id="in-medio" required>
+                <option value="Tarjeta / Banco">💳 Tarjeta / Cuenta Bancaria</option>
+                <option value="Efectivo">💵 Efectivo (En mano)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Categoría (1 sola palabra) *</label>
+              <select class="input-control" id="in-categoria" required>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="input-group">
+              <label class="input-label">Fecha *</label>
+              <input type="date" class="input-control" id="in-fecha" required>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Concepto / Detalle</label>
+              <input type="text" class="input-control" id="in-concepto" placeholder="Ej: Vinted, Cena, Balón, etc.">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">Guardar Movimiento</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 4: METAS -->
+    <section id="view-goals" class="tab-view">
+      <div class="card">
+        <div class="card-header">
+          <span>Huchas y Metas de Ahorro</span>
+          <button class="btn-action" onclick="nuevaMeta()">+ Nueva Meta</button>
+        </div>
+        <p style="font-size:0.83rem; color:var(--text-muted); margin-bottom:14px;">
+          Reserva dinero para tus proyectos (Fondo, Viajes, Coche) indicando exactamente dónde guardas ese capital (cuenta separada, efectivo en bote, etc.).
+        </p>
+
+        <div id="goals-container">
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 5: HISTORIAL Y AJUSTES AVANZADOS -->
+    <section id="view-history" class="tab-view">
+      <div class="card">
+        <div class="card-header">
+          <span>Historial Completo de Movimientos</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="tx-count">0 movimientos</span>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Categoría</th>
+                <th>Medio</th>
+                <th style="text-align: right;">Importe</th>
+                <th style="text-align: center;">Borrar</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-cuerpo">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Zona de Reset Oculta y Protegida -->
+      <div class="hidden-zone">
+        <details>
+          <summary>⚙️ Opciones avanzadas de mantenimiento / Reinicio</summary>
+          <p style="font-size:0.75rem; color:#777; margin-top:8px;">
+            Esta acción restablecerá tus saldos iniciales y borrará el historial para empezar un año o periodo nuevo desde cero.
+          </p>
+          <button class="btn-danger-hidden" onclick="resetAllToZero()">⚠️ Borrar todo y poner a Cero</button>
+        </details>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Informe Ejecutivo -->
+  <div class="modal-overlay" id="modal-report" onclick="cerrarInforme(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <span class="report-badge">AUDITORÍA FINANCIERA EJECUTIVA</span>
+      <h2 style="font-size:1.25rem; font-weight:800; color:var(--gold-light); margin-bottom:14px;" id="report-title">
+        Informe Financiero Mensual
+      </h2>
+      <div id="report-body" style="font-size:0.86rem; line-height:1.6; color:var(--text);">
+        <!-- Generado dinámicamente -->
+      </div>
+      <button class="btn-submit" style="margin-top:18px;" onclick="document.getElementById('modal-report').classList.remove('active')">
+        Cerrar Informe
+      </button>
+    </div>
+  </div>
+
+  <!-- Navegación Inferior de 5 Pestañas -->
+  <nav>
+    <button class="nav-item active" onclick="cambiarPestana('home')">
+      <span>📊</span>
+      <span>Balances</span>
+    </button>
+    <button class="nav-item" onclick="cambiarPestana('advisor')">
+      <span>🏛️</span>
+      <span>Asesor</span>
+    </button>
+    <button class="nav-item" onclick="cambiarPestana('add')">
+      <span>➕</span>
+      <span>Añadir</span>
+    </button>
+    <button class="nav-item" onclick="cambiarPestana('goals')">
+      <span>🎯</span>
+      <span>Metas</span>
+    </button>
+    <button class="nav-item" onclick="cambiarPestana('history')">
+      <span>📑</span>
+      <span>Historial</span>
+    </button>
+  </nav>
+
+  <script>
+    let tipoActual = 'gasto';
+    let movimientos = [];
+    let saldoBase = { tarjeta: 0.00, efectivo: 0.00 };
+    let metas = [
+      { id: 'goal_1', name: 'Emergencia', location: 'Cuenta Ahorro / Separada', target: 3000, current: 0 },
+      { id: 'goal_2', name: 'Viajes', location: 'Efectivo en mano / Bote', target: 1000, current: 0 }
+    ];
+
+    const CATEGORIAS = {
+      gasto: [
+        { name: "Restaurantes", type: "wants" },
+        { name: "Ocio", type: "wants" },
+        { name: "Deporte", type: "wants" },
+        { name: "Vinted", type: "wants" },
+        { name: "Supermercado", type: "needs" },
+        { name: "Transporte", type: "needs" },
+        { name: "Vivienda", type: "needs" },
+        { name: "Compras", type: "wants" },
+        { name: "Imprevisto", type: "wants" }
+      ],
+      ingreso: [
+        { name: "Nómina", type: "income" },
+        { name: "Trabajos", type: "income" },
+        { name: "Partidos", type: "income" },
+        { name: "Vinted", type: "income" },
+        { name: "Regalos", type: "income" },
+        { name: "Bizum", type: "income" },
+        { name: "Otros", type: "income" }
+      ]
+    };
+
+    let chartCatInstance = null;
+    let chartMediosInstance = null;
+
+    function getFechaHoyISO() {
+      const hoy = new Date();
+      const a = hoy.getFullYear();
+      const m = String(hoy.getMonth() + 1).padStart(2, '0');
+      const d = String(hoy.getDate()).padStart(2, '0');
+      return `${a}-${m}-${d}`;
+    }
+
+    function parseDinero(valorStr) {
+      if (!valorStr) return 0;
+      let limpio = String(valorStr).trim().replace(/\s/g, '').replace('€', '');
+      limpio = limpio.replace(',', '.');
+      const num = parseFloat(limpio);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function formatEUR(num) {
+      return (num || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Inicia con la fecha exacta de hoy
+      document.getElementById('in-fecha').value = getFechaHoyISO();
+      cargarDatosStorage();
+      actualizarCategoriasSelect();
+      refrescarTodo();
+    });
+
+    function cargarDatosStorage() {
+      const savedMovs = localStorage.getItem('app_finanzas_movimientos');
+      const savedBase = localStorage.getItem('app_finanzas_base');
+      const savedMetas = localStorage.getItem('app_finanzas_metas');
+      if (savedMovs) movimientos = JSON.parse(savedMovs);
+      if (savedBase) saldoBase = JSON.parse(savedBase);
+      if (savedMetas) metas = JSON.parse(savedMetas);
+    }
+
+    function guardarEnStorage() {
+      localStorage.setItem('app_finanzas_movimientos', JSON.stringify(movimientos));
+      localStorage.setItem('app_finanzas_base', JSON.stringify(saldoBase));
+      localStorage.setItem('app_finanzas_metas', JSON.stringify(metas));
+    }
+
+    function setInitialFunds() {
+      const cardStr = prompt('Dinero actual en CUENTA / TARJETA (€):', String(saldoBase.tarjeta).replace('.', ','));
+      if (cardStr !== null) saldoBase.tarjeta = parseDinero(cardStr);
+
+      const cashStr = prompt('Dinero actual en EFECTIVO (€):', String(saldoBase.efectivo).replace('.', ','));
+      if (cashStr !== null) saldoBase.efectivo = parseDinero(cashStr);
+
+      guardarEnStorage();
+      refrescarTodo();
+    }
+
+    function resetAllToZero() {
+      const confirmacion = prompt('Escribe "RESET" en mayúsculas para confirmar que deseas borrar todos los registros y poner tus cuentas a cero:');
+      if (confirmacion === 'RESET') {
+        movimientos = [];
+        saldoBase = { tarjeta: 0.00, efectivo: 0.00 };
+        metas.forEach(m => m.current = 0);
+        guardarEnStorage();
+        refrescarTodo();
+        alert('Cuentas restablecidas a cero con éxito.');
+      } else {
+        alert('Acción cancelada. Tus datos están intactos.');
+      }
+    }
+
+    function cambiarPestana(id) {
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+      const target = document.getElementById(`view-${id}`);
+      if (target) target.classList.add('active');
+
+      const tabs = ['home', 'advisor', 'add', 'goals', 'history'];
+      const idx = tabs.indexOf(id);
+      if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+
+      refrescarTodo();
+    }
+
+    function setTipo(tipo) {
+      tipoActual = tipo;
+      const btnG = document.getElementById('btn-tipo-gasto');
+      const btnI = document.getElementById('btn-tipo-ingreso');
+      if (tipo === 'gasto') {
+        btnG.classList.add('active');
+        btnI.classList.remove('active');
+      } else {
+        btnI.classList.add('active');
+        btnG.classList.remove('active');
+      }
+      actualizarCategoriasSelect();
+    }
+
+    function actualizarCategoriasSelect() {
+      const select = document.getElementById('in-categoria');
+      select.innerHTML = '';
+      CATEGORIAS[tipoActual].forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.name;
+        opt.textContent = cat.name;
+        select.appendChild(opt);
+      });
+    }
+
+    function guardarMovimiento(e) {
+      e.preventDefault();
+      const rawImporte = document.getElementById('in-importe').value;
+      const importe = parseDinero(rawImporte);
+
+      if (importe <= 0) {
+        alert('Introduce un importe válido mayor que 0.');
+        return;
+      }
+
+      const medio = document.getElementById('in-medio').value;
+      const categoria = document.getElementById('in-categoria').value;
+      const fecha = document.getElementById('in-fecha').value;
+      const concepto = document.getElementById('in-concepto').value.trim() || categoria;
+
+      const nuevo = {
+        id: 'mov_' + Date.now(),
+        tipo: tipoActual,
+        importe,
+        medio,
+        categoria,
+        fecha,
+        concepto
+      };
+
+      movimientos.unshift(nuevo);
+      guardarEnStorage();
+
+      document.getElementById('in-importe').value = '';
+      document.getElementById('in-concepto').value = '';
+
+      alert('¡Movimiento guardado con éxito!');
+      cambiarPestana('home');
+    }
+
+    function eliminarMovimiento(id) {
+      if (confirm('¿Eliminar este movimiento?')) {
+        movimientos = movimientos.filter(m => m.id !== id);
+        guardarEnStorage();
+        refrescarTodo();
+      }
+    }
+
+    // Metas
+    function nuevaMeta() {
+      const nombre = prompt('Nombre de la Meta (1 palabra, ej: Emergencia, Viaje, Coche):');
+      if (!nombre) return;
+      const ubicacion = prompt('¿Dónde guardas este dinero? (ej: En cuenta de ahorro, En efectivo en bote, En broker):', 'Cuenta de ahorro');
+      if (!ubicacion) return;
+      const objetivoStr = prompt('Objetivo en total (€):', '500');
+      const objetivo = parseDinero(objetivoStr);
+      if (objetivo <= 0) return;
+
+      metas.push({ id: 'goal_' + Date.now(), name: nombre, location: ubicacion, target: objetivo, current: 0 });
+      guardarEnStorage();
+      renderMetas();
+    }
+
+    function editarUbicacionMeta(id) {
+      const meta = metas.find(m => m.id === id);
+      if (!meta) return;
+      const nuevaUbi = prompt(`¿Dónde guardas el dinero para "${meta.name}"?`, meta.location || 'Cuenta de ahorro');
+      if (nuevaUbi !== null && nuevaUbi.trim() !== '') {
+        meta.location = nuevaUbi.trim();
+        guardarEnStorage();
+        renderMetas();
+      }
+    }
+
+    function aportarMeta(id) {
+      const meta = metas.find(m => m.id === id);
+      if (!meta) return;
+      const cantStr = prompt(`¿Cuánto quieres añadir o retirar de "${meta.name}"? (Escribe con coma o punto, ej: 50,50):`, '50');
+      if (cantStr === null) return;
+      const cant = parseDinero(cantStr);
+      if (cant === 0) return;
+
+      meta.current = Math.max(0, meta.current + cant);
+      guardarEnStorage();
+      renderMetas();
+    }
+
+    function eliminarMeta(id) {
+      if (confirm('¿Eliminar esta meta?')) {
+        metas = metas.filter(m => m.id !== id);
+        guardarEnStorage();
+        renderMetas();
+      }
+    }
+
+    function renderMetas() {
+      const container = document.getElementById('goals-container');
+      container.innerHTML = '';
+
+      if (metas.length === 0) {
+        container.innerHTML = '<div class="empty-msg">No tienes metas creadas. Haz clic en "+ Nueva Meta" para empezar.</div>';
+        return;
+      }
+
+      metas.forEach(m => {
+        const pct = Math.min(100, Math.round((m.current / m.target) * 100));
+        const div = document.createElement('div');
+        div.className = 'goal-card';
+        div.innerHTML = `
+          <div class="goal-top">
+            <span style="color:var(--text); font-weight:700;">${m.name}</span>
+            <span style="color:var(--gold); font-weight:700;">${formatEUR(m.current)} / ${formatEUR(m.target)} (${pct}%)</span>
+          </div>
+          <div class="goal-where-badge" onclick="editarUbicacionMeta('${m.id}')" title="Haz clic para cambiar la ubicación" style="cursor:pointer;">
+            📍 Guardado en: <u>${m.location || 'Sin definir'}</u> ✎
+          </div>
+          <div class="goal-progress-bg">
+            <div class="goal-progress-bar" style="width: ${pct}%;"></div>
+          </div>
+          <div class="goal-actions">
+            <span>Faltan: ${formatEUR(Math.max(0, m.target - m.current))}</span>
+            <div>
+              <button class="btn-sm-gold" onclick="aportarMeta('${m.id}')">Aportar / Retirar</button>
+              <button class="btn-del" onclick="eliminarMeta('${m.id}')" title="Eliminar">✕</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Cálculos y Refresco
+    function refrescarTodo() {
+      let saldoTarjeta = saldoBase.tarjeta;
+      let saldoEfectivo = saldoBase.efectivo;
+
+      const mesActual = new Date().toISOString().slice(0, 7);
+      let gastosMes = 0;
+      let ingresosMes = 0;
+
+      let gastoNeeds = 0;
+      let gastoWants = 0;
+
+      const catsGastos = {};
+      let totalGastadoTarjeta = 0;
+      let totalGastadoEfectivo = 0;
+
+      movimientos.forEach(m => {
+        const val = m.importe;
+        const esMesActual = m.fecha.startsWith(mesActual);
+
+        if (m.tipo === 'ingreso') {
+          if (m.medio === 'Efectivo') saldoEfectivo += val;
+          else saldoTarjeta += val;
+
+          if (esMesActual) ingresosMes += val;
+        } else {
+          if (m.medio === 'Efectivo') {
+            saldoEfectivo -= val;
+            totalGastadoEfectivo += val;
+          } else {
+            saldoTarjeta -= val;
+            totalGastadoTarjeta += val;
+          }
+
+          if (esMesActual) {
+            gastosMes += val;
+            const catInfo = CATEGORIAS.gasto.find(c => c.name === m.categoria);
+            if (catInfo && catInfo.type === 'needs') gastoNeeds += val;
+            else gastoWants += val;
+          }
+
+          catsGastos[m.categoria] = (catsGastos[m.categoria] || 0) + val;
+        }
+      });
+
+      const totalGlobal = saldoTarjeta + saldoEfectivo;
+
+      document.getElementById('kpi-total-global').textContent = formatEUR(totalGlobal);
+      document.getElementById('kpi-total-tarjeta').textContent = formatEUR(saldoTarjeta);
+      document.getElementById('kpi-total-efectivo').textContent = formatEUR(saldoEfectivo);
+
+      document.getElementById('kpi-mes-ingresos').textContent = '+' + formatEUR(ingresosMes);
+      document.getElementById('kpi-mes-gastos').textContent = '-' + formatEUR(gastosMes);
+
+      actualizarAsesorYRegla(ingresosMes, gastoNeeds, gastoWants, catsGastos, totalGlobal);
+
+      renderTablas();
+      renderMetas();
+      renderGraficos(catsGastos, totalGastadoTarjeta, totalGastadoEfectivo);
+    }
+
+    function actualizarAsesorYRegla(ingresos, needs, wants, catsGastos, patrimonio) {
+      const base = ingresos > 0 ? ingresos : (needs + wants);
+      const savings = Math.max(0, ingresos - (needs + wants));
+
+      const pctNeeds = base > 0 ? Math.round((needs / base) * 100) : 0;
+      const pctWants = base > 0 ? Math.round((wants / base) * 100) : 0;
+      const pctSavings = base > 0 ? Math.round((savings / base) * 100) : 0;
+
+      document.getElementById('bar-needs').style.width = pctNeeds + '%';
+      document.getElementById('bar-wants').style.width = pctWants + '%';
+      document.getElementById('bar-savings').style.width = pctSavings + '%';
+
+      document.getElementById('lbl-needs-val').textContent = `${formatEUR(needs)} (${pctNeeds}%)`;
+      document.getElementById('lbl-wants-val').textContent = `${formatEUR(wants)} (${pctWants}%)`;
+      document.getElementById('lbl-savings-val').textContent = `${formatEUR(savings)} (${pctSavings}%)`;
+
+      // Consejos y diagnósticos del asesor financiero
+      const tipsBox = document.getElementById('advisor-tips-container');
+      tipsBox.innerHTML = '';
+
+      // Diagnóstico 1: Tasa de Ahorro
+      if (ingresos === 0) {
+        tipsBox.innerHTML += `
+          <div class="advice-card">
+            <strong>📋 Registro de Flujo Mensual</strong>
+            No has anotado ingresos este mes aún. En cuanto anotes tu nómina, cobros o partidos, calcularemos tu porcentaje de ahorro real.
+          </div>
+        `;
+      } else if (pctSavings >= 20) {
+        tipsBox.innerHTML += `
+          <div class="advice-card success">
+            <strong>🌟 Tasa de Ahorro Saludable (${pctSavings}%)</strong>
+            Estás cumpliendo el estándar de oro financiero (>20%). Recomendación: transfiere ese excedente (${formatEUR(savings)}) directamente a tu hucha de Emergencia o inversión antes de final de mes para evitar el efecto 'gasto fantasma'.
+          </div>
+        `;
+      } else {
+        tipsBox.innerHTML += `
+          <div class="advice-card alert">
+            <strong>⚠️ Capacidad de Ahorro Comprometida (${pctSavings}%)</strong>
+            Tu tasa de ahorro mensual está por debajo del 20% recomendado. Tienes margen para recortar en partidas discrecionales de ocio o restaurantes para recuperar al menos 100-150 € este mes.
+          </div>
+        `;
+      }
+
+      // Diagnóstico 2: Fugas de Ocio / Deseos
+      if (pctWants > 30) {
+        tipsBox.innerHTML += `
+          <div class="advice-card alert">
+            <strong>🚨 Presupuesto de Estilo de Vida Superado (${pctWants}%)</strong>
+            Tus gastos en ocio, restaurantes, compras o deporte superan el 30% de tus ingresos. Fija un tope semanal para el fin de semana para no ahogar tu liquidez.
+          </div>
+        `;
+      }
+
+      // Diagnóstico 3: Categoría con mayor fuga
+      let maxCat = '';
+      let maxCatVal = 0;
+      Object.keys(catsGastos).forEach(cat => {
+        if (catsGastos[cat] > maxCatVal) {
+          maxCatVal = catsGastos[cat];
+          maxCat = cat;
+        }
+      });
+
+      if (maxCatVal > 0) {
+        tipsBox.innerHTML += `
+          <div class="advice-card">
+            <strong>🔍 Mayor Fuga Detectada: "${maxCat}"</strong>
+            Representa ${formatEUR(maxCatVal)} de tus gastos. Evalúa si este desembolso es recurrente u ocasional para presupuestarlo mejor el mes siguiente.
+          </div>
+        `;
+      }
+    }
+
+    // Informe Profesional Emergente
+    function generarInformeEjecutivo() {
+      const mesActual = new Date().toISOString().slice(0, 7);
+      const totalGlobal = saldoBase.tarjeta + saldoBase.efectivo;
+
+      let ingresosMes = 0;
+      let gastosMes = 0;
+      let needs = 0;
+      let wants = 0;
+      const catsGastos = {};
+
+      movimientos.forEach(m => {
+        if (m.fecha.startsWith(mesActual)) {
+          if (m.tipo === 'ingreso') ingresosMes += m.importe;
+          else {
+            gastosMes += m.importe;
+            const catInfo = CATEGORIAS.gasto.find(c => c.name === m.categoria);
+            if (catInfo && catInfo.type === 'needs') needs += m.importe;
+            else wants += m.importe;
+
+            catsGastos[m.categoria] = (catsGastos[m.categoria] || 0) + m.importe;
+          }
+        }
+      });
+
+      const superavit = ingresosMes - gastosMes;
+      const tasaAhorro = ingresosMes > 0 ? Math.round((superavit / ingresosMes) * 100) : 0;
+
+      let totalEnMetas = 0;
+      metas.forEach(m => totalEnMetas += m.current);
+
+      let html = `
+        <div style="background:#1C1C1C; padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid #292929;">
+          <strong>Posición Patrimonial Neta:</strong> ${formatEUR(totalGlobal)}<br>
+          <span style="color:var(--text-muted); font-size:0.8rem;">
+            💳 Banco: ${formatEUR(saldoBase.tarjeta)} | 💵 Efectivo: ${formatEUR(saldoBase.efectivo)} | 🎯 Asignado en Metas: ${formatEUR(totalEnMetas)}
+          </span>
+        </div>
+
+        <h3 style="color:var(--gold); font-size:0.95rem; margin-bottom:8px;">1. Rendimiento del Mes en Curso</h3>
+        <ul style="padding-left:18px; margin-bottom:14px;">
+          <li><strong>Ingresos Totales:</strong> <span class="green-text">+${formatEUR(ingresosMes)}</span></li>
+          <li><strong>Gastos Totales:</strong> <span class="red-text">-${formatEUR(gastosMes)}</span></li>
+          <li><strong>Superávit Neto:</strong> <strong style="color:${superavit >= 0 ? 'var(--gold)' : 'var(--red)'};">${formatEUR(superavit)}</strong></li>
+          <li><strong>Tasa de Ahorro Real:</strong> ${tasaAhorro}% (Objetivo ideal: >20%)</li>
+        </ul>
+
+        <h3 style="color:var(--gold); font-size:0.95rem; margin-bottom:8px;">2. Desglose Estratégico (Regla 50/30/20)</h3>
+        <p style="margin-bottom:6px;">
+          • <strong>Necesidades Básicas:</strong> ${formatEUR(needs)} (${ingresosMes > 0 ? Math.round((needs/ingresosMes)*100) : 0}%) - Tope recomendado: 50%<br>
+          • <strong>Deseos y Ocio:</strong> ${formatEUR(wants)} (${ingresosMes > 0 ? Math.round((wants/ingresosMes)*100) : 0}%) - Tope recomendado: 30%<br>
+          • <strong>Margen para Capitalizar:</strong> ${formatEUR(Math.max(0, superavit))}
+        </p>
+
+        <h3 style="color:var(--gold); font-size:0.95rem; margin-top:14px; margin-bottom:8px;">3. Recomendaciones del Asesor</h3>
+        <div style="background:#181818; padding:12px; border-radius:8px; border-left:3px solid var(--gold);">
+          ${superavit > 0 
+            ? `Dispones de un superávit de <strong>${formatEUR(superavit)}</strong>. Te sugiero destinar un 70% a tu meta de Emergencia y un 30% a proyectos o viajes para mantener alta motivación de ahorro.` 
+            : `Actualmente tus gastos igualan o superan tus ingresos este mes. Congela gastos en Restaurantes y Ocio las próximas 2 semanas para cerrar en positivo.`}
+        </div>
+      `;
+
+      document.getElementById('report-body').innerHTML = html;
+      document.getElementById('modal-report').classList.add('active');
+    }
+
+    function cerrarInforme(e) {
+      document.getElementById('modal-report').classList.remove('active');
+    }
+
+    function renderTablas() {
+      // 1. Tabla de Recientes en Página Principal (solo los últimos 4)
+      const tbodyRecientes = document.getElementById('tabla-recientes');
+      tbodyRecientes.innerHTML = '';
+      const ultimos = movimientos.slice(0, 4);
+
+      if (ultimos.length === 0) {
+        tbodyRecientes.innerHTML = '<tr><td colspan="4" class="empty-msg">No hay movimientos recientes. Pulsa en "+" para añadir uno.</td></tr>';
+      } else {
+        ultimos.forEach(m => {
+          const tr = document.createElement('tr');
+          const esGasto = m.tipo === 'gasto';
+          const sign = esGasto ? '-' : '+';
+          const colorClass = esGasto ? 'red-text' : 'gold-text';
+          tr.innerHTML = `
+            <td style="color:var(--text-muted); font-size:0.8rem;">${m.fecha}</td>
+            <td><strong>${m.concepto}</strong></td>
+            <td style="color:var(--gold); font-weight:600;">${m.categoria}</td>
+            <td style="text-align: right; font-weight:800;" class="${colorClass}">${sign}${formatEUR(m.importe)}</td>
+          `;
+          tbodyRecientes.appendChild(tr);
+        });
+      }
+
+      // 2. Tabla de Historial Completo
+      const tbody = document.getElementById('tabla-cuerpo');
+      tbody.innerHTML = '';
+      document.getElementById('tx-count').textContent = `${movimientos.length} movimiento(s)`;
+
+      if (movimientos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-msg">No hay movimientos registrados.</td></tr>';
+        return;
+      }
+
+      movimientos.forEach(m => {
+        const tr = document.createElement('tr');
+        const esGasto = m.tipo === 'gasto';
+        const sign = esGasto ? '-' : '+';
+        const colorClass = esGasto ? 'red-text' : 'gold-text';
+        const badgeClass = m.medio === 'Efectivo' ? 'badge-efectivo' : 'badge-tarjeta';
+
+        tr.innerHTML = `
+          <td style="color:var(--text-muted); font-size:0.8rem; white-space:nowrap;">${m.fecha}</td>
+          <td><strong>${m.concepto}</strong></td>
+          <td style="color:var(--gold); font-weight:600;">${m.categoria}</td>
+          <td><span class="badge-medio ${badgeClass}">${m.medio}</span></td>
+          <td style="text-align: right; font-weight:800;" class="${colorClass}">${sign}${formatEUR(m.importe)}</td>
+          <td style="text-align: center;">
+            <button class="btn-del" onclick="eliminarMovimiento('${m.id}')" title="Eliminar">✕</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderGraficos(catsGastos, gastadoTarjeta, gastadoEfectivo) {
+      const labels = Object.keys(catsGastos);
+      const data = Object.values(catsGastos);
+
+      if (chartCatInstance) chartCatInstance.destroy();
+      const ctxCat = document.getElementById('chartCategorias').getContext('2d');
+      chartCatInstance = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+          labels: labels.length ? labels : ['Sin gastos aún'],
+          datasets: [{
+            data: data.length ? data : [1],
+            backgroundColor: data.length ? ['#D4AF37', '#E53935', '#3B82F6', '#FFA000', '#C62828', '#FFD54F', '#8E0000', '#06B6D4', '#9333EA'] : ['#222'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#9E9E9E', font: { size: 10 } } }
+          },
+          cutout: '70%'
+        }
+      });
+
+      if (chartMediosInstance) chartMediosInstance.destroy();
+      const ctxMedios = document.getElementById('chartMedios').getContext('2d');
+      chartMediosInstance = new Chart(ctxMedios, {
+        type: 'bar',
+        data: {
+          labels: ['Tarjeta / Banco', 'Efectivo'],
+          datasets: [{
+            label: 'Gastado (€)',
+            data: [gastadoTarjeta, gastadoEfectivo],
+            backgroundColor: ['#60A5FA', '#D4AF37'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9E9E9E' } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#9E9E9E' } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function exportData() {
+      const data = { saldoBase, movimientos, metas };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mi_control_financiero_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.saldoBase) saldoBase = data.saldoBase;
+          if (data.movimientos) movimientos = data.movimientos;
+          if (data.metas) metas = data.metas;
+          guardarEnStorage();
+          refrescarTodo();
+          alert('¡Copia de seguridad restaurada correctamente!');
+        } catch (err) {
+          alert('Error al leer el archivo JSON.');
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
