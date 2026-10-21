@@ -19,14 +19,11 @@
       const canvas = document.createElement('canvas');
       canvas.width = 512; canvas.height = 512;
       const ctx = canvas.getContext('2d');
-      
       const bgGrad = ctx.createLinearGradient(0, 0, 512, 512);
       bgGrad.addColorStop(0, '#161616'); bgGrad.addColorStop(1, '#050505');
       ctx.fillStyle = bgGrad;
       ctx.beginPath(); ctx.roundRect(0, 0, 512, 512, 110); ctx.fill();
       
-      // Borde dorado eliminado según tu petición
-
       function drawCoin(cx, cy, r, mainColor, darkColor) {
         ctx.fillStyle = darkColor; ctx.beginPath(); ctx.arc(cx, cy + 14, r, 0, Math.PI * 2); ctx.fill();
         const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
@@ -135,15 +132,20 @@
 </head>
 <body>
 
+  <!-- PANTALLA DE LOGIN REESTRUCTURADA PARA PERMITIR FACE ID NATIVO -->
   <div id="login-screen">
     <div class="login-box">
       <img src="" id="login-logo-img" class="login-logo" alt="Logo">
       <h1 class="login-title">Caja Fuerte</h1>
       <p class="login-subtitle">Inicia sesión para cargar tu perfil seguro.</p>
-      <input type="email" id="auth-email" class="auth-input" placeholder="Tu correo electrónico" autocomplete="username">
-      <input type="password" id="auth-pass" class="auth-input" placeholder="Contraseña" autocomplete="current-password">
-      <button class="btn-auth" onclick="iniciarSesion()">Desbloquear (Face ID / Clave)</button>
-      <button class="btn-auth-sec" onclick="crearCuenta()">Crear mi cuenta nueva</button>
+      
+      <form onsubmit="iniciarSesion(event)">
+        <input type="email" id="auth-email" class="auth-input" placeholder="Tu correo electrónico" autocomplete="username" required>
+        <input type="password" id="auth-pass" class="auth-input" placeholder="Contraseña" autocomplete="current-password" required>
+        <button type="submit" class="btn-auth">Entrar (Guarda con Face ID)</button>
+        <button type="button" class="btn-auth-sec" onclick="crearCuenta()">Crear mi cuenta nueva</button>
+      </form>
+
       <p id="auth-error" style="color: var(--red); font-size: 0.8rem; margin-top: 10px; display: none;"></p>
     </div>
   </div>
@@ -158,6 +160,7 @@
     </header>
 
     <main>
+      <!-- BALANCES -->
       <section id="view-home" class="tab-view active">
         <div class="adjust-bar"><span>⚙️ Ajustar Saldos Actuales:</span><button onclick="setInitialFunds()">Ajustar</button></div>
         <div class="balances-grid">
@@ -168,6 +171,7 @@
         <div class="card"><div class="card-header">Últimos Movimientos</div><table style="display:block; overflow-x:auto;"><tbody id="tabla-recientes"></tbody></table></div>
       </section>
 
+      <!-- ASESOR FINANCIERO EXPERTO -->
       <section id="view-advisor" class="tab-view">
         <div class="advisor-header">
           <div style="font-size:1.15rem; font-weight:800; color:var(--gold-light);">🏛️ Asesor Patrimonial Experto</div>
@@ -187,6 +191,7 @@
         </div>
       </section>
 
+      <!-- AÑADIR -->
       <section id="view-add" class="tab-view">
         <div class="card">
           <div class="selector-tipo">
@@ -210,6 +215,7 @@
         </div>
       </section>
 
+      <!-- METAS -->
       <section id="view-goals" class="tab-view">
         <div class="card">
           <div class="card-header"><span>Huchas y Metas</span><button class="btn-sm-gold" onclick="nuevaMeta()">+ Nueva Meta</button></div>
@@ -217,6 +223,7 @@
         </div>
       </section>
 
+      <!-- HISTORIAL Y AJUSTES -->
       <section id="view-history" class="tab-view">
         <div class="card">
           <div class="card-header">Historial Completo</div>
@@ -264,24 +271,26 @@
       ingreso: ["Nómina", "Trabajos", "Partidos", "Vinted", "Regalos", "Bizum", "Otros"]
     };
 
-    // NUEVO: Forzar que Firebase no recuerde la sesión permanentemente (exige seguridad cada vez)
-    auth.setPersistence(firebase.auth.Auth.Persistence.NONE).then(() => {
-      auth.onAuthStateChanged((user) => {
-        if (user) {
-          document.getElementById('login-screen').style.display = 'none';
-          document.getElementById('app-main').style.display = 'block';
-          document.getElementById('user-display-name').textContent = "Perfil: " + user.email.split('@')[0];
-          docRef = db.collection("datos_usuario").doc(user.uid);
-          iniciarApp();
-        } else {
-          document.getElementById('app-main').style.display = 'none';
-          document.getElementById('login-screen').style.display = 'flex';
-        }
-      });
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-main').style.display = 'block';
+        document.getElementById('user-display-name').textContent = "Perfil: " + user.email.split('@')[0];
+        docRef = db.collection("datos_usuario").doc(user.uid);
+        iniciarApp();
+      } else {
+        document.getElementById('app-main').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'flex';
+      }
     });
 
     function mostrarError(msg) { const err = document.getElementById('auth-error'); err.textContent = msg; err.style.display = 'block'; }
-    function iniciarSesion() { auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value).catch(e => mostrarError("Error en credenciales.")); }
+    
+    function iniciarSesion(e) { 
+      e.preventDefault(); 
+      auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value).catch(e => mostrarError("Error en credenciales.")); 
+    }
+    
     function crearCuenta() { auth.createUserWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value).catch(e => mostrarError("Error al crear cuenta.")); }
     function cerrarSesion() { auth.signOut(); }
 
