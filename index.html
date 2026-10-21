@@ -124,7 +124,7 @@
 </head>
 <body>
 
-  <!-- PANTALLA LOGIN PROTEGIDA -->
+  <!-- PANTALLA LOGIN PROTEGIDA (FORZADO A PULSAR ENTRAR) -->
   <div id="login-screen">
     <div class="login-box">
       <img src="" id="login-logo-img" class="login-logo" alt="Logo">
@@ -154,6 +154,7 @@
     </div>
   </div>
 
+  <!-- APP PRINCIPAL -->
   <div id="app-main">
     <header>
       <div class="brand">
@@ -188,7 +189,7 @@
           </div>
         </div>
         
-        <!-- NUEVO: CHAT AI -->
+        <!-- CHAT AI SEGURO -->
         <div class="card">
           <div class="card-header">💬 Chat con el Asesor AI</div>
           <div id="chat-box" style="height: 250px; overflow-y: auto; background: #151515; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.5;">
@@ -222,7 +223,7 @@
           </form>
         </div>
 
-        <!-- NUEVO: LEER EXTRACTO ING -->
+        <!-- LEER EXTRACTO ING -->
         <div class="card" style="margin-top: 18px;">
           <div class="card-header">📋 Pegar Extracto Bancario (ING)</div>
           <textarea id="in-extracto" class="input-control" rows="4" placeholder="Pega aquí las líneas de tu extracto de ING..."></textarea>
@@ -278,8 +279,8 @@
     let saldoBase = { tarjeta: 0.00, efectivo: 0.00 };
 
     const CATEGORIAS = {
-      gasto: ["Restaurantes", "Ocio", "Deporte", "Vinted", "Supermercado", "Transporte", "Vivienda", "Compras", "Imprevisto"],
-      ingreso: ["Nómina", "Trabajos", "Partidos", "Vinted", "Regalos", "Bizum", "Otros"]
+      gasto: ["Restaurantes", "Ocio", "Supermercado", "Transporte", "Vivienda", "Compras", "Imprevisto", "Vinted"],
+      ingreso: ["Nómina", "Trabajos", "Partidos", "Regalos", "Bizum", "Vinted", "Otros"]
     };
 
     function mostrarFormulario(tipo) {
@@ -397,7 +398,6 @@
       cambiarPestana('home');
     }
 
-    // NUEVO: PROCESAR EXTRACTO ING
     function procesarExtracto() {
       const texto = document.getElementById('in-extracto').value;
       if(!texto.trim()) return alert("Pega el texto del extracto primero.");
@@ -406,7 +406,6 @@
       let count = 0;
       
       lineas.forEach(linea => {
-        // Busca patron: Fecha | Concepto | Importe | Saldo (Ej: 12/10/2026 MERCADONA -46,85 €)
         const match = linea.match(/(\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+([+-]?\d+[.,]\d{2})\s*€/);
         if(match) {
           const [d,m,y] = match[1].split('/');
@@ -447,7 +446,6 @@
       }
     }
 
-    // NUEVO: EDITAR MOVIMIENTO
     function editarMovimiento(id) {
       const mov = movimientos.find(m => m.id === id);
       if(!mov) return;
@@ -472,7 +470,7 @@
     }
     function eliminarMeta(id) { if(confirm('¿Borrar meta?')) { metas = metas.filter(m=>m.id!==id); guardarEnCloud(); } }
 
-    // NUEVO: CHAT AI CON GEMINI
+    // CHAT AI SEGURO (CONECTADO A FIREBASE)
     async function enviarMensajeAI() {
       const input = document.getElementById('ai-input');
       const texto = input.value.trim();
@@ -483,11 +481,17 @@
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Le pasamos a la IA tus números reales para que opine
       const contexto = `Actúa como mi asesor financiero experto. Datos de mis cuentas hoy: Tarjeta=${saldoBase.tarjeta}€, Efectivo=${saldoBase.efectivo}€. Mis metas actuales=${JSON.stringify(metas)}. Mis últimos 5 gastos=${JSON.stringify(movimientos.slice(0,5))}. Responde de forma breve, útil y directa a la siguiente pregunta: ${texto}`;
 
       try {
-        const apiKey = "AQ.Ab8RN6LevSwqqPPVwPphUVNO5JcRG5FKKbVJHIzxMZYdvzNjyg";
+        // LEER LA CLAVE INVISIBLE DESDE FIREBASE
+        const docClave = await db.collection("configuracion").doc("claves").get();
+        if(!docClave.exists || !docClave.data().gemini) {
+           chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> No se ha encontrado la clave en Firebase.</div>`;
+           return;
+        }
+        const apiKey = docClave.data().gemini;
+
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
