@@ -124,7 +124,7 @@
 </head>
 <body>
 
-  <!-- PANTALLA LOGIN PROTEGIDA (FORZADO A PULSAR ENTRAR) -->
+  <!-- PANTALLA LOGIN PROTEGIDA -->
   <div id="login-screen">
     <div class="login-box">
       <img src="" id="login-logo-img" class="login-logo" alt="Logo">
@@ -154,7 +154,6 @@
     </div>
   </div>
 
-  <!-- APP PRINCIPAL -->
   <div id="app-main">
     <header>
       <div class="brand">
@@ -189,11 +188,11 @@
           </div>
         </div>
         
-        <!-- CHAT AI SEGURO CON SUBIDA DE ARCHIVOS (PDF/IMAGEN) -->
+        <!-- CHAT AI CON SOPORTE PARA PEGAR IMÁGENES -->
         <div class="card">
           <div class="card-header">💬 Chat con el Asesor AI</div>
           <div id="chat-box" style="height: 280px; overflow-y: auto; background: #151515; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.5;">
-             <div style="color:var(--gold); margin-bottom:8px;"><strong>Asesor:</strong> ¡Hola! Conozco tus cuentas. Pregúntame lo que necesites o adjunta un PDF/Imagen de tus extractos y te haré un resumen y sugerencias de mejora.</div>
+             <div style="color:var(--gold); margin-bottom:8px;"><strong>Asesor:</strong> ¡Hola! Conozco tus cuentas. Pregúntame lo que necesites o pega directamente una captura de tus extractos aquí.</div>
           </div>
           
           <div id="ai-file-name" style="font-size:0.75rem; color:var(--gold); margin-bottom:8px; display:none;"></div>
@@ -203,13 +202,13 @@
                📎
                <input type="file" id="ai-file" accept=".pdf,image/*" style="display:none;" onchange="actualizarNombreArchivo()">
             </label>
-            <input type="text" id="ai-input" class="input-control" placeholder="Escribe aquí o sube un documento..." style="margin-bottom:0;">
+            <input type="text" id="ai-input" class="input-control" placeholder="Escribe o pega una imagen (Ctrl+V)..." style="margin-bottom:0;">
             <button class="btn-submit" style="width: auto; padding: 0 20px; margin-top:0;" onclick="enviarMensajeAI()">Enviar</button>
           </div>
         </div>
       </section>
 
-      <!-- AÑADIR (Extracto ING eliminado) -->
+      <!-- AÑADIR -->
       <section id="view-add" class="tab-view">
         <div class="card">
           <div class="selector-tipo">
@@ -239,7 +238,7 @@
         </div>
       </section>
 
-      <!-- HISTORIAL CON EDICIÓN -->
+      <!-- HISTORIAL -->
       <section id="view-history" class="tab-view">
         <div class="card">
           <div class="card-header">Historial Completo</div>
@@ -422,7 +421,6 @@
     }
     function eliminarMeta(id) { if(confirm('¿Borrar meta?')) { metas = metas.filter(m=>m.id!==id); guardarEnCloud(); } }
 
-    // CHAT AI CON SUBIDA DE ARCHIVOS
     function actualizarNombreArchivo() {
       const input = document.getElementById('ai-file');
       const nameDiv = document.getElementById('ai-file-name');
@@ -434,6 +432,21 @@
       }
     }
 
+    // CAPTURA DEL EVENTO PEGAR IMAGEN
+    document.getElementById('ai-input').addEventListener('paste', function(e) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const blob = items[i].getAsFile();
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(new File([blob], "captura_pegada.png", { type: blob.type }));
+          document.getElementById('ai-file').files = dataTransfer.files;
+          actualizarNombreArchivo();
+          e.preventDefault();
+        }
+      }
+    });
+
     async function enviarMensajeAI() {
       const inputTxt = document.getElementById('ai-input');
       const inputFile = document.getElementById('ai-file');
@@ -443,6 +456,7 @@
       if(!texto && !archivo) return;
 
       const chatBox = document.getElementById('chat-box');
+      
       chatBox.innerHTML += `<div style="color:white; margin-bottom:8px; text-align:right;"><strong>Tú:</strong> ${texto} ${archivo ? '<br><span style="color:var(--gold); font-size:0.75rem;">(📄 '+archivo.name+')</span>' : ''}</div>`;
       
       inputTxt.value = '';
@@ -450,13 +464,19 @@
       document.getElementById('ai-file-name').style.display = 'none';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // El prompt por defecto si solo sube el archivo sin texto
-      const promptText = texto || "He adjuntado un documento. Por favor, analízalo, hazme un resumen y dame consejos para mejorar mis finanzas el próximo mes basándote en este archivo.";
+      if (archivo && archivo.size > 3 * 1024 * 1024) {
+         chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:12px; background:#1A1A1A; padding:10px; border-radius:8px; border-left:3px solid var(--red);">
+           <strong>Aviso del sistema:</strong><br>
+           El archivo pesa demasiado (${(archivo.size / 1024 / 1024).toFixed(1)} MB). Por favor, sube una captura de pantalla (imagen) de tus movimientos o un PDF más ligero (máximo 3 MB).
+         </div>`;
+         chatBox.scrollTop = chatBox.scrollHeight;
+         return;
+      }
 
+      const promptText = texto || "He adjuntado un documento. Por favor, analízalo, hazme un resumen y dame consejos para mejorar mis finanzas el próximo mes basándote en este archivo.";
       const contexto = `Actúa como mi asesor financiero experto. Datos de mis cuentas hoy: Tarjeta=${saldoBase.tarjeta}€, Efectivo=${saldoBase.efectivo}€. Mis metas actuales=${JSON.stringify(metas)}. Mis últimos gastos=${JSON.stringify(movimientos.slice(0,5))}. Responde de forma útil, profesional y separando por párrafos a la siguiente pregunta: ${promptText}`;
 
       try {
-        // LEER LA CLAVE DESDE FIREBASE
         const docClave = await db.collection("configuracion").doc("claves").get();
         if(!docClave.exists || !docClave.data().gemini) {
            chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> No se ha encontrado la clave en Firebase.</div>`;
@@ -466,21 +486,14 @@
 
         let partsArr = [{ text: contexto }];
 
-        // Si hay archivo, lo convertimos a Base64 para que Gemini lo lea
         if (archivo) {
             const base64Data = await new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onloadend = () => {
-                    const base64 = reader.result.split(',')[1];
-                    resolve(base64);
-                };
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
                 reader.readAsDataURL(archivo);
             });
             partsArr.push({
-                inlineData: {
-                    mimeType: archivo.type,
-                    data: base64Data
-                }
+                inlineData: { mimeType: archivo.type, data: base64Data }
             });
         }
 
@@ -497,7 +510,6 @@
         document.getElementById('ai-typing').remove();
 
         const respuestaBruta = data.candidates[0].content.parts[0].text;
-        // Convertimos los saltos de línea a <br> para que se lea bien
         const respuestaFormateada = respuestaBruta.replace(/\n/g, '<br>');
         
         chatBox.innerHTML += `<div style="color:var(--gold-light); margin-bottom:12px; background:#1A1A1A; padding:10px; border-radius:8px; border-left:3px solid var(--gold);"><strong>Asesor:</strong><br><br>${respuestaFormateada}</div>`;
@@ -505,7 +517,7 @@
       } catch(e) {
         const typingEl = document.getElementById('ai-typing');
         if(typingEl) typingEl.remove();
-        chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> Hubo un problema al contactar con la IA. Es posible que el archivo PDF o imagen sea demasiado pesado.</div>`;
+        chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> Hubo un problema al contactar con la IA. Si enviaste un archivo, intenta subirlo como captura de pantalla.</div>`;
       }
     }
 
@@ -531,9 +543,7 @@
       document.getElementById('kpi-total-tarjeta').textContent = formatEUR(st);
       document.getElementById('kpi-total-efectivo').textContent = formatEUR(se);
 
-      const htmlTr = (m,g) => {
-        return `<tr><td style="font-size:0.75rem;">${m.fecha}</td><td><strong>${m.concepto}</strong></td><td style="color:var(--gold); font-size:0.75rem;">${m.categoria}</td><td class="${g?'red-text':'gold-text'}" style="text-align:right; font-weight:800;">${g?'-':'+'}${formatEUR(m.importe)}</td><td style="text-align:center;"><button class="btn-edit" onclick="editarMovimiento('${m.id}')">✏️</button><button class="btn-del" onclick="eliminarMovimiento('${m.id}')">✕</button></td></tr>`;
-      };
+      const htmlTr = (m,g) => `<tr><td style="font-size:0.75rem;">${m.fecha}</td><td><strong>${m.concepto}</strong></td><td style="color:var(--gold); font-size:0.75rem;">${m.categoria}</td><td class="${g?'red-text':'gold-text'}" style="text-align:right; font-weight:800;">${g?'-':'+'}${formatEUR(m.importe)}</td><td style="text-align:center;"><button class="btn-edit" onclick="editarMovimiento('${m.id}')">✏️</button><button class="btn-del" onclick="eliminarMovimiento('${m.id}')">✕</button></td></tr>`;
       
       document.getElementById('tabla-recientes').innerHTML = movimientos.slice(0,4).map(m=>`<tr><td style="font-size:0.75rem;">${m.fecha}</td><td><strong>${m.concepto}</strong></td><td style="color:var(--gold);">${m.categoria}</td><td class="${m.tipo==='gasto'?'red-text':'gold-text'}" style="text-align:right; font-weight:800;">${m.tipo==='gasto'?'-':'+'}${formatEUR(m.importe)}</td></tr>`).join('') || '<tr><td colspan="4" style="color:gray;text-align:center;">Vacío</td></tr>';
       document.getElementById('tabla-cuerpo').innerHTML = movimientos.map(m=>htmlTr(m,m.tipo==='gasto')).join('') || '<tr><td colspan="5" style="color:gray;text-align:center;">Vacío</td></tr>';
