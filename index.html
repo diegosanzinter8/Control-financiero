@@ -39,6 +39,8 @@
       const pngUrl = canvas.toDataURL('image/png');
       document.getElementById('favicon-link').href = pngUrl;
       document.getElementById('apple-icon-link').href = pngUrl;
+      const manifest = { name: "Mi Control Financiero", short_name: "Finanzas", start_url: ".", display: "standalone", background_color: "#080808", theme_color: "#080808", icons: [{ src: pngUrl, sizes: "512x512", type: "image/png", purpose: "any maskable" }] };
+      document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
       window.__appIconPNG = pngUrl;
     })();
   </script>
@@ -131,20 +133,20 @@
 </head>
 <body>
 
-  <!-- PANTALLA LOGIN: DISEÑO LIMPIO (OPCIÓN 2A) Y BLOQUEO AUTOMÁTICO (OPCIÓN 1A) -->
+  <!-- PANTALLA LOGIN: DISEÑO LIMPIO Y BLOQUEO AUTOMÁTICO -->
   <div id="login-screen">
     <div class="login-box">
       <img src="" id="login-logo-img" class="login-logo" alt="Logo">
       <h1 class="login-title">Caja Fuerte</h1>
       <p class="login-subtitle">Acceso seguro a tus finanzas.</p>
       
-      <!-- BOTONES INICIALES (LIMPIOS) -->
+      <!-- BOTONES INICIALES -->
       <div id="auth-buttons">
         <button class="btn-auth" onclick="mostrarFormulario('login')">Iniciar Sesión</button>
         <button class="btn-auth-sec" onclick="mostrarFormulario('register')">Crear Cuenta</button>
       </div>
 
-      <!-- FORMULARIO DE INICIO (FACE ID LISTO) -->
+      <!-- FORMULARIO DE INICIO (FACE ID) -->
       <form id="form-login" style="display:none;" onsubmit="iniciarSesion(event)">
         <input type="email" id="login-email" class="auth-input" placeholder="Tu correo electrónico" autocomplete="username" required>
         <input type="password" id="login-pass" class="auth-input" placeholder="Contraseña" autocomplete="current-password" required>
@@ -271,11 +273,11 @@
 
     // CATEGORÍAS (1 SOLA PALABRA)
     const CATEGORIAS = {
-      gasto: ["Restaurantes", "Ocio", "Supermercado", "Transporte", "Vivienda", "Compras", "Imprevisto"],
-      ingreso: ["Nómina", "Trabajos", "Partidos", "Regalos", "Bizum", "Otros"]
+      gasto: ["Restaurantes", "Ocio", "Supermercado", "Transporte", "Vivienda", "Compras", "Imprevisto", "Vinted"],
+      ingreso: ["Nómina", "Trabajos", "Partidos", "Regalos", "Bizum", "Vinted", "Otros"]
     };
 
-    // UI DEL LOGIN (LIMPIO, REVELA LOS CAMPOS AL TOCAR)
+    // UI DEL LOGIN (LIMPIO)
     function mostrarFormulario(tipo) {
       document.getElementById('auth-error').style.display = 'none';
       if(tipo === 'login') {
@@ -295,7 +297,8 @@
 
     function mostrarError(msg) { const err = document.getElementById('auth-error'); err.textContent = msg; err.style.display = 'block'; }
 
-    // SEGURIDAD TOTAL: LA APP NO ENTRA SOLA. BORRA LA SESIÓN AL CARGAR LA PÁGINA.
+    // SEGURIDAD TOTAL: BLOQUEO OBLIGATORIO (No auto-login)
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
     auth.signOut().then(() => {
       document.getElementById('login-screen').style.display = 'flex';
       document.getElementById('app-main').style.display = 'none';
@@ -319,7 +322,7 @@
       auth.signOut().then(() => location.reload());
     }
 
-    // SEPARACIÓN DE DATOS (OPCIÓN 3A): CADA CORREO TIENE SU CARPETA
+    // BASE DE DATOS SEPARADA POR USUARIO
     function configurarEntrada(cred) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-main').style.display = 'block';
