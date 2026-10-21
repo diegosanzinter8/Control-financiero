@@ -36,6 +36,7 @@
       drawCoin(175, 295, 85, '#D4AF37', '#6E550B');
       drawCoin(335, 285, 90, '#DFB83C', '#6E550B');
       drawCoin(256, 205, 112, '#F0C946', '#5C4506');
+      
       const pngUrl = canvas.toDataURL('image/png');
       document.getElementById('favicon-link').href = pngUrl;
       document.getElementById('apple-icon-link').href = pngUrl;
@@ -53,7 +54,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    :root { --bg-black: #080808; --bg-card: #121212; --bg-input: #1A1A1A; --border: #242424; --gold: #D4AF37; --gold-light: #F3E5AB; --gold-glow: rgba(212, 175, 55, 0.22); --red: #E53935; --red-glow: rgba(229, 57, 53, 0.22); --blue: #3B82F6; --green: #10B981; --text: #F5F5F5; --text-muted: #9E9E9E; }
+    :root { --bg-black: #080808; --bg-card: #121212; --bg-input: #1A1A1A; --border: #242424; --gold: #D4AF37; --gold-light: #F3E5AB; --gold-glow: rgba(212, 175, 55, 0.22); --red: #E53935; --blue: #3B82F6; --green: #10B981; --text: #F5F5F5; --text-muted: #9E9E9E; }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-black); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 95px; }
     
@@ -64,10 +65,9 @@
     .login-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; }
     .auth-input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 14px; border-radius: 10px; margin-bottom: 14px; font-family: inherit; font-size: 1rem; }
     .btn-auth { width: 100%; background: linear-gradient(135deg, var(--gold), #A47E1B); color: #000; border: none; border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 800; cursor: pointer; margin-bottom: 12px; }
-    .btn-auth-sec { width: 100%; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 800; cursor: pointer; }
+    .btn-auth-sec { width: 100%; background: transparent; color: var(--text-muted); font-size: 0.85rem; text-decoration: underline; border: none; cursor: pointer; }
     
     #app-main { display: none; width: 100%; }
-
     header { background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
     .brand { display: flex; align-items: center; gap: 10px; }
     .brand-icon { width: 38px; height: 38px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 14px var(--gold-glow); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; }
@@ -88,7 +88,7 @@
     .balance-box.red-border { border-top: 3px solid var(--red); }
     .balance-title { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
     .balance-amount { font-size: 1.55rem; font-weight: 800; color: var(--text); }
-    .gold-text { color: var(--gold); } .red-text { color: var(--red); } .green-text { color: var(--green); }
+    .gold-text { color: var(--gold); } .red-text { color: var(--red); }
     
     .adjust-bar { display: flex; flex-wrap: wrap; gap: 10px; background: #151515; padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px dashed var(--border); align-items: center; justify-content: space-between; }
     .adjust-bar button { background: var(--gold); color: #000; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
@@ -99,9 +99,7 @@
     .rule-seg-needs { background: #3B82F6; transition: width 0.3s; }
     .rule-seg-wants { background: var(--red); transition: width 0.3s; }
     .rule-seg-savings { background: var(--gold); transition: width 0.3s; }
-    .advice-card { background: #151515; border-left: 4px solid var(--gold); padding: 14px; margin-bottom: 12px; font-size: 0.86rem; border-radius: 0 10px 10px 0; line-height: 1.5;}
-    .advice-card strong { display:block; margin-bottom:4px; color:var(--gold-light); }
-    .advice-card.alert { border-left-color: var(--red); } .advice-card.success { border-left-color: var(--green); }
+    .advice-card { background: #151515; border-left: 4px solid var(--gold); padding: 14px; margin-bottom: 12px; font-size: 0.86rem; border-radius: 0 10px 10px 0;}
     .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
     .chart-box { position: relative; height: 240px; width: 100%; }
     
@@ -123,8 +121,7 @@
     .tag-fijo { font-size: 0.7rem; background: #3B82F6; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
     .tag-variable { font-size: 0.7rem; background: var(--red); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
     .btn-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; }
-    .btn-logout { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; margin: 5px; }
-
+    
     nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14, 14, 14, 0.98); backdrop-filter: blur(14px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; z-index: 100; }
     .nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; font-weight: 600; }
     .nav-item.active { color: var(--gold); }
@@ -132,19 +129,19 @@
 </head>
 <body>
 
-  <!-- PANTALLA DE LOGIN REESTRUCTURADA PARA PERMITIR FACE ID NATIVO -->
+  <!-- PANTALLA LOGIN -->
   <div id="login-screen">
     <div class="login-box">
       <img src="" id="login-logo-img" class="login-logo" alt="Logo">
       <h1 class="login-title">Caja Fuerte</h1>
-      <p class="login-subtitle">Inicia sesión para cargar tu perfil seguro.</p>
+      <p class="login-subtitle">Confirma tu acceso para continuar.</p>
       
       <form onsubmit="iniciarSesion(event)">
         <input type="email" id="auth-email" class="auth-input" placeholder="Tu correo electrónico" autocomplete="username" required>
         <input type="password" id="auth-pass" class="auth-input" placeholder="Contraseña" autocomplete="current-password" required>
-        <button type="submit" class="btn-auth">Entrar (Guarda con Face ID)</button>
-        <button type="button" class="btn-auth-sec" onclick="crearCuenta()">Crear mi cuenta nueva</button>
+        <button type="submit" class="btn-auth">Entrar</button>
       </form>
+      <button type="button" class="btn-auth-sec" onclick="crearCuenta()">Crear cuenta nueva</button>
 
       <p id="auth-error" style="color: var(--red); font-size: 0.8rem; margin-top: 10px; display: none;"></p>
     </div>
@@ -171,21 +168,19 @@
         <div class="card"><div class="card-header">Últimos Movimientos</div><table style="display:block; overflow-x:auto;"><tbody id="tabla-recientes"></tbody></table></div>
       </section>
 
-      <!-- ASESOR FINANCIERO EXPERTO -->
+      <!-- ASESOR -->
       <section id="view-advisor" class="tab-view">
-        <div class="advisor-header">
-          <div style="font-size:1.15rem; font-weight:800; color:var(--gold-light);">🏛️ Asesor Patrimonial Experto</div>
-        </div>
+        <div class="advisor-header"><div style="font-size:1.15rem; font-weight:800; color:var(--gold-light);">🏛️ Asesor Patrimonial Experto</div></div>
         <div class="rule-box">
-          <div style="font-weight:700; color:var(--gold); margin-bottom:10px;">Estructura de Gasto Mensual (Fijos vs Variables)</div>
+          <div style="font-weight:700; color:var(--gold); margin-bottom:10px;">Estructura de Gasto Mensual</div>
           <div class="rule-bar">
             <div id="bar-needs" class="rule-seg-needs"></div><div id="bar-wants" class="rule-seg-wants"></div><div id="bar-savings" class="rule-seg-savings"></div>
           </div>
           <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-top:5px;">
-            <span style="color:#60A5FA;">Fijos / Estructurales</span><span style="color:var(--red);">Variables / Deseos</span><span style="color:var(--gold);">Ahorro</span>
+            <span style="color:#60A5FA;">Fijos</span><span style="color:var(--red);">Variables</span><span style="color:var(--gold);">Ahorro</span>
           </div>
         </div>
-        <div class="card"><div class="card-header">Auditoría y Recomendaciones</div><div id="advisor-tips-container"></div></div>
+        <div class="card"><div class="card-header">Auditoría</div><div id="advisor-tips-container"></div></div>
         <div class="charts-row">
           <div class="card"><div class="card-header">Por Categorías</div><div class="chart-box"><canvas id="chartCategorias"></canvas></div></div>
         </div>
@@ -202,12 +197,10 @@
             <input type="text" inputmode="decimal" class="input-control" id="in-importe" placeholder="Importe (€)" required style="font-size:1.5rem; color:var(--gold); font-weight:800;">
             <select class="input-control" id="in-medio"><option value="Tarjeta / Banco">💳 Tarjeta / Banco</option><option value="Efectivo">💵 Efectivo</option></select>
             <select class="input-control" id="in-categoria"></select>
-            
             <select class="input-control" id="in-naturaleza">
-              <option value="Variable">🔄 Gasto Variable (Ocio, Compras, etc.)</option>
-              <option value="Fijo">📌 Gasto Fijo (Alquiler, Suscripciones, etc.)</option>
+              <option value="Variable">🔄 Gasto Variable</option>
+              <option value="Fijo">📌 Gasto Fijo</option>
             </select>
-
             <input type="date" class="input-control" id="in-fecha" required>
             <input type="text" class="input-control" id="in-concepto" placeholder="Concepto">
             <button type="submit" class="btn-submit">Guardar Movimiento</button>
@@ -223,7 +216,7 @@
         </div>
       </section>
 
-      <!-- HISTORIAL Y AJUSTES -->
+      <!-- HISTORIAL -->
       <section id="view-history" class="tab-view">
         <div class="card">
           <div class="card-header">Historial Completo</div>
@@ -231,9 +224,6 @@
             <thead><tr><th>Fecha</th><th>Concepto</th><th>Importe</th><th></th></tr></thead>
             <tbody id="tabla-cuerpo"></tbody>
           </table>
-        </div>
-        <div style="text-align:center; padding:20px; border-top:1px solid #222; margin-top:20px;">
-          <button class="btn-logout" onclick="cerrarSesion()">🔒 Cerrar Sesión</button>
         </div>
       </section>
     </main>
@@ -271,6 +261,11 @@
       ingreso: ["Nómina", "Trabajos", "Partidos", "Vinted", "Regalos", "Bizum", "Otros"]
     };
 
+    // EL TRUCO PARA QUE NUNCA ENTRE SOLO: Forzar deslogueo al cargar la página
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE).then(() => {
+      auth.signOut(); // Esto destruye sesiones previas fantasma
+    });
+
     auth.onAuthStateChanged((user) => {
       if (user) {
         document.getElementById('login-screen').style.display = 'none';
@@ -288,11 +283,19 @@
     
     function iniciarSesion(e) { 
       e.preventDefault(); 
-      auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value).catch(e => mostrarError("Error en credenciales.")); 
+      auth.signInWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value)
+      .catch(e => mostrarError("Correo o contraseña incorrectos.")); 
     }
     
-    function crearCuenta() { auth.createUserWithEmailAndPassword(document.getElementById('auth-email').value, document.getElementById('auth-pass').value).catch(e => mostrarError("Error al crear cuenta.")); }
-    function cerrarSesion() { auth.signOut(); }
+    function crearCuenta() { 
+      const email = document.getElementById('auth-email').value;
+      const pass = document.getElementById('auth-pass').value;
+      if(email && pass) {
+        auth.createUserWithEmailAndPassword(email, pass).catch(e => mostrarError("Error al crear cuenta. ¿Contraseña corta?")); 
+      } else {
+        mostrarError("Rellena correo y contraseña para crear.");
+      }
+    }
 
     function iniciarApp() {
       document.getElementById('in-fecha').value = new Date().toISOString().split('T')[0];
@@ -345,7 +348,6 @@
       e.preventDefault();
       const importe = parseDinero(document.getElementById('in-importe').value);
       if(importe <= 0) return;
-      
       const naturaleza = tipoActual === 'gasto' ? document.getElementById('in-naturaleza').value : null;
 
       movimientos.unshift({ 
@@ -415,14 +417,12 @@
       document.getElementById('bar-savings').style.width = (base>0 ? (savings/base)*100 : 0)+'%';
       
       let tips = '';
-      if(ingMes === 0) {
-        tips = '<div class="advice-card"><strong>Esperando Datos</strong><br>Anota ingresos este mes para activar la auditoría.</div>';
-      } else {
-        if((fijos / base) > 0.5) tips += `<div class="advice-card alert"><strong>⚠️ Alerta Estructural (Fijos)</strong><br>Tus gastos fijos superan el 50% de tus ingresos. Estás muy apalancado.</div>`;
-        else tips += `<div class="advice-card success"><strong>✅ Costes Fijos Saludables</strong><br>Tus obligaciones estructurales están por debajo del 50%. Tienes buen margen de maniobra.</div>`;
-        if((variables / base) > 0.3) tips += `<div class="advice-card alert"><strong>🚨 Fuga en Variables</strong><br>Tus gastos variables (ocio/compras) rompen la barrera del 30%. Modera tu ritmo.</div>`;
-        if((savings / base) >= 0.2) tips += `<div class="advice-card success"><strong>🌟 Ahorro Óptimo</strong><br>Cumples el ratio >20% (${formatEUR(savings)}).</div>`;
-        else tips += `<div class="advice-card alert"><strong>⚠️ Tasa de Ahorro Deficiente</strong><br>Ahorras menos del 20%. Tu generación de patrimonio está estancada este mes.</div>`;
+      if(ingMes === 0) tips = '<div class="advice-card">Anota ingresos este mes.</div>';
+      else {
+        if((fijos / base) > 0.5) tips += `<div class="advice-card alert">⚠️ Gastos fijos superan el 50%. Estás apalancado.</div>`;
+        else tips += `<div class="advice-card success">✅ Costes fijos bajo el 50%.</div>`;
+        if((variables / base) > 0.3) tips += `<div class="advice-card alert">🚨 Fuga en variables, reduce ocio.</div>`;
+        if((savings / base) >= 0.2) tips += `<div class="advice-card success">🌟 Ahorras más del 20%.</div>`;
       }
       document.getElementById('advisor-tips-container').innerHTML = tips;
 
