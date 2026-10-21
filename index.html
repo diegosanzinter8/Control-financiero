@@ -189,20 +189,27 @@
           </div>
         </div>
         
-        <!-- CHAT AI SEGURO -->
+        <!-- CHAT AI SEGURO CON SUBIDA DE ARCHIVOS (PDF/IMAGEN) -->
         <div class="card">
           <div class="card-header">💬 Chat con el Asesor AI</div>
-          <div id="chat-box" style="height: 250px; overflow-y: auto; background: #151515; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.5;">
-             <div style="color:var(--gold); margin-bottom:8px;"><strong>Asesor:</strong> ¡Hola! Conozco tus cuentas. ¿En qué te puedo ayudar hoy?</div>
+          <div id="chat-box" style="height: 280px; overflow-y: auto; background: #151515; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.5;">
+             <div style="color:var(--gold); margin-bottom:8px;"><strong>Asesor:</strong> ¡Hola! Conozco tus cuentas. Pregúntame lo que necesites o adjunta un PDF/Imagen de tus extractos y te haré un resumen y sugerencias de mejora.</div>
           </div>
-          <div style="display: flex; gap: 8px;">
-            <input type="text" id="ai-input" class="input-control" placeholder="Ej: ¿Me puedo gastar 50€ en una cena?" style="margin-bottom:0;">
+          
+          <div id="ai-file-name" style="font-size:0.75rem; color:var(--gold); margin-bottom:8px; display:none;"></div>
+          
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <label for="ai-file" style="cursor:pointer; background:var(--bg-input); border:1px solid var(--border); padding:12px; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+               📎
+               <input type="file" id="ai-file" accept=".pdf,image/*" style="display:none;" onchange="actualizarNombreArchivo()">
+            </label>
+            <input type="text" id="ai-input" class="input-control" placeholder="Escribe aquí o sube un documento..." style="margin-bottom:0;">
             <button class="btn-submit" style="width: auto; padding: 0 20px; margin-top:0;" onclick="enviarMensajeAI()">Enviar</button>
           </div>
         </div>
       </section>
 
-      <!-- AÑADIR & EXTRACTOS -->
+      <!-- AÑADIR (Extracto ING eliminado) -->
       <section id="view-add" class="tab-view">
         <div class="card">
           <div class="selector-tipo">
@@ -221,13 +228,6 @@
             <input type="text" class="input-control" id="in-concepto" placeholder="Concepto (Opcional)">
             <button type="submit" class="btn-submit">Guardar Movimiento</button>
           </form>
-        </div>
-
-        <!-- LEER EXTRACTO ING -->
-        <div class="card" style="margin-top: 18px;">
-          <div class="card-header">📋 Pegar Extracto Bancario (ING)</div>
-          <textarea id="in-extracto" class="input-control" rows="4" placeholder="Pega aquí las líneas de tu extracto de ING..."></textarea>
-          <button class="btn-submit" style="margin-top:10px; background:var(--blue); color:white;" onclick="procesarExtracto()">Leer y Añadir Movimientos</button>
         </div>
       </section>
 
@@ -398,54 +398,6 @@
       cambiarPestana('home');
     }
 
-    function procesarExtracto() {
-      const texto = document.getElementById('in-extracto').value;
-      if(!texto.trim()) return alert("Pega el texto del extracto primero.");
-      
-      const lineas = texto.split('\n');
-      let count = 0;
-      
-      lineas.forEach(linea => {
-        const match = linea.match(/(\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+([+-]?\d+[.,]\d{2})\s*€/);
-        if(match) {
-          const [d,m,y] = match[1].split('/');
-          const concepto = match[2].trim();
-          const importeNum = parseFloat(match[3].replace('.','').replace(',','.'));
-          const tipo = importeNum < 0 ? 'gasto' : 'ingreso';
-          const importe = Math.abs(importeNum);
-          
-          let categoria = 'Otros';
-          const lowerC = concepto.toLowerCase();
-          if(lowerC.includes('mercadona') || lowerC.includes('carrefour') || lowerC.includes('consum')) categoria = 'Supermercado';
-          else if(lowerC.includes('bizum')) categoria = 'Bizum';
-          else if(lowerC.includes('vinted')) categoria = 'Vinted';
-          else if(lowerC.includes('renfe') || lowerC.includes('uber') || lowerC.includes('repsol')) categoria = 'Transporte';
-          else if(lowerC.includes('restaurante') || lowerC.includes('mcdonalds')) categoria = 'Restaurantes';
-
-          movimientos.unshift({ 
-            id: 'mov_'+Date.now()+Math.random(), 
-            tipo: tipo, 
-            importe: importe, 
-            medio: 'Tarjeta / Banco', 
-            categoria: categoria, 
-            naturaleza: 'Variable',
-            fecha: `${y}-${m}-${d}`, 
-            concepto: concepto 
-          });
-          count++;
-        }
-      });
-      
-      if(count > 0) {
-        guardarEnCloud();
-        alert(`¡Éxito! Se han importado ${count} movimientos. Revisa el Historial para editarlos si es necesario.`);
-        document.getElementById('in-extracto').value = '';
-        cambiarPestana('history');
-      } else {
-        alert("No se detectaron movimientos. Asegúrate de copiar las filas con la Fecha, Concepto e Importe (€).");
-      }
-    }
-
     function editarMovimiento(id) {
       const mov = movimientos.find(m => m.id === id);
       if(!mov) return;
@@ -470,21 +422,41 @@
     }
     function eliminarMeta(id) { if(confirm('¿Borrar meta?')) { metas = metas.filter(m=>m.id!==id); guardarEnCloud(); } }
 
-    // CHAT AI SEGURO (CONECTADO A FIREBASE)
+    // CHAT AI CON SUBIDA DE ARCHIVOS
+    function actualizarNombreArchivo() {
+      const input = document.getElementById('ai-file');
+      const nameDiv = document.getElementById('ai-file-name');
+      if (input.files.length > 0) {
+        nameDiv.textContent = '📄 Archivo cargado: ' + input.files[0].name;
+        nameDiv.style.display = 'block';
+      } else {
+        nameDiv.style.display = 'none';
+      }
+    }
+
     async function enviarMensajeAI() {
-      const input = document.getElementById('ai-input');
-      const texto = input.value.trim();
-      if(!texto) return;
+      const inputTxt = document.getElementById('ai-input');
+      const inputFile = document.getElementById('ai-file');
+      const texto = inputTxt.value.trim();
+      const archivo = inputFile.files[0];
+
+      if(!texto && !archivo) return;
 
       const chatBox = document.getElementById('chat-box');
-      chatBox.innerHTML += `<div style="color:white; margin-bottom:8px; text-align:right;"><strong>Tú:</strong> ${texto}</div>`;
-      input.value = '';
+      chatBox.innerHTML += `<div style="color:white; margin-bottom:8px; text-align:right;"><strong>Tú:</strong> ${texto} ${archivo ? '<br><span style="color:var(--gold); font-size:0.75rem;">(📄 '+archivo.name+')</span>' : ''}</div>`;
+      
+      inputTxt.value = '';
+      inputFile.value = '';
+      document.getElementById('ai-file-name').style.display = 'none';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      const contexto = `Actúa como mi asesor financiero experto. Datos de mis cuentas hoy: Tarjeta=${saldoBase.tarjeta}€, Efectivo=${saldoBase.efectivo}€. Mis metas actuales=${JSON.stringify(metas)}. Mis últimos 5 gastos=${JSON.stringify(movimientos.slice(0,5))}. Responde de forma breve, útil y directa a la siguiente pregunta: ${texto}`;
+      // El prompt por defecto si solo sube el archivo sin texto
+      const promptText = texto || "He adjuntado un documento. Por favor, analízalo, hazme un resumen y dame consejos para mejorar mis finanzas el próximo mes basándote en este archivo.";
+
+      const contexto = `Actúa como mi asesor financiero experto. Datos de mis cuentas hoy: Tarjeta=${saldoBase.tarjeta}€, Efectivo=${saldoBase.efectivo}€. Mis metas actuales=${JSON.stringify(metas)}. Mis últimos gastos=${JSON.stringify(movimientos.slice(0,5))}. Responde de forma útil, profesional y separando por párrafos a la siguiente pregunta: ${promptText}`;
 
       try {
-        // LEER LA CLAVE INVISIBLE DESDE FIREBASE
+        // LEER LA CLAVE DESDE FIREBASE
         const docClave = await db.collection("configuracion").doc("claves").get();
         if(!docClave.exists || !docClave.data().gemini) {
            chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> No se ha encontrado la clave en Firebase.</div>`;
@@ -492,17 +464,48 @@
         }
         const apiKey = docClave.data().gemini;
 
+        let partsArr = [{ text: contexto }];
+
+        // Si hay archivo, lo convertimos a Base64 para que Gemini lo lea
+        if (archivo) {
+            const base64Data = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.readAsDataURL(archivo);
+            });
+            partsArr.push({
+                inlineData: {
+                    mimeType: archivo.type,
+                    data: base64Data
+                }
+            });
+        }
+
+        chatBox.innerHTML += `<div id="ai-typing" style="color:var(--text-muted); font-size:0.8rem; margin-bottom:8px;"><em>El asesor está analizando la información...</em></div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: contexto }] }] })
+          body: JSON.stringify({ contents: [{ parts: partsArr }] })
         });
+        
         const data = await res.json();
-        const respuestaAI = data.candidates[0].content.parts[0].text;
-        chatBox.innerHTML += `<div style="color:var(--gold); margin-bottom:8px;"><strong>Asesor:</strong> ${respuestaAI}</div>`;
+        document.getElementById('ai-typing').remove();
+
+        const respuestaBruta = data.candidates[0].content.parts[0].text;
+        // Convertimos los saltos de línea a <br> para que se lea bien
+        const respuestaFormateada = respuestaBruta.replace(/\n/g, '<br>');
+        
+        chatBox.innerHTML += `<div style="color:var(--gold-light); margin-bottom:12px; background:#1A1A1A; padding:10px; border-radius:8px; border-left:3px solid var(--gold);"><strong>Asesor:</strong><br><br>${respuestaFormateada}</div>`;
         chatBox.scrollTop = chatBox.scrollHeight;
       } catch(e) {
-        chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> Problema de conexión con la IA.</div>`;
+        const typingEl = document.getElementById('ai-typing');
+        if(typingEl) typingEl.remove();
+        chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> Hubo un problema al contactar con la IA. Es posible que el archivo PDF o imagen sea demasiado pesado.</div>`;
       }
     }
 
