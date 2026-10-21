@@ -39,8 +39,6 @@
       const pngUrl = canvas.toDataURL('image/png');
       document.getElementById('favicon-link').href = pngUrl;
       document.getElementById('apple-icon-link').href = pngUrl;
-      const manifest = { name: "Mi Control Financiero", short_name: "Finanzas", start_url: ".", display: "standalone", background_color: "#080808", theme_color: "#080808", icons: [{ src: pngUrl, sizes: "512x512", type: "image/png", purpose: "any maskable" }] };
-      document.getElementById('manifest-link').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
       window.__appIconPNG = pngUrl;
     })();
   </script>
@@ -57,7 +55,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-black); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 95px; }
     
-    /* LOGIN SCREEN LIMPIA */
     #login-screen { position: fixed; inset: 0; background: var(--bg-black); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; transition: opacity 0.4s; }
     .login-box { width: 100%; max-width: 360px; background: var(--bg-card); border: 1px solid var(--gold); border-radius: 16px; padding: 32px 24px; text-align: center; box-shadow: 0 10px 40px var(--gold-glow); }
     .login-logo { width: 90px; height: 90px; margin: 0 auto 20px; }
@@ -71,8 +68,6 @@
     .btn-text { background: transparent; color: var(--text-muted); border: none; font-size: 0.85rem; text-decoration: underline; cursor: pointer; margin-top: 10px; }
     
     #app-main { display: none; width: 100%; }
-
-    /* RESTO DE LA APP */
     header { background: rgba(18, 18, 18, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
     .brand { display: flex; align-items: center; gap: 10px; }
     .brand-icon { width: 38px; height: 38px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 14px var(--gold-glow); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; }
@@ -103,15 +98,12 @@
     .rule-seg-needs { background: #3B82F6; transition: width 0.3s; }
     .rule-seg-wants { background: var(--red); transition: width 0.3s; }
     .rule-seg-savings { background: var(--gold); transition: width 0.3s; }
-    .advice-card { background: #151515; border-left: 4px solid var(--gold); padding: 14px; margin-bottom: 12px; font-size: 0.86rem; border-radius: 0 10px 10px 0;}
-    .charts-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-    .chart-box { position: relative; height: 240px; width: 100%; }
     
     .selector-tipo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
     .btn-tipo { padding: 14px; border-radius: 10px; border: 2px solid var(--border); background: var(--bg-input); color: var(--text-muted); font-weight: 700; cursor: pointer; }
     .btn-tipo.active.gasto { border-color: var(--red); color: var(--red); background: rgba(229, 57, 53, 0.12); }
     .btn-tipo.active.ingreso { border-color: var(--gold); color: var(--gold); background: rgba(212, 175, 55, 0.12); }
-    .input-control { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 14px; }
+    .input-control { width: 100%; background: var(--bg-input); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; margin-bottom: 14px; font-family:inherit;}
     .btn-submit { width: 100%; background: linear-gradient(135deg, var(--gold), #A47E1B); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: 800; cursor: pointer; }
     
     .goal-card { background: #171717; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
@@ -122,9 +114,8 @@
     table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
     th { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); color: var(--gold); }
     td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
-    .tag-fijo { font-size: 0.7rem; background: #3B82F6; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
-    .tag-variable { font-size: 0.7rem; background: var(--red); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
-    .btn-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; }
+    .btn-del { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; margin:0 5px;}
+    .btn-edit { background: none; border: none; color: var(--gold); cursor: pointer; font-size: 1.1rem; margin:0 5px;}
     
     nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(14, 14, 14, 0.98); backdrop-filter: blur(14px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px; z-index: 100; }
     .nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; font-weight: 600; }
@@ -133,20 +124,18 @@
 </head>
 <body>
 
-  <!-- PANTALLA LOGIN: DISEÑO LIMPIO Y BLOQUEO AUTOMÁTICO -->
+  <!-- PANTALLA LOGIN PROTEGIDA -->
   <div id="login-screen">
     <div class="login-box">
       <img src="" id="login-logo-img" class="login-logo" alt="Logo">
       <h1 class="login-title">Caja Fuerte</h1>
       <p class="login-subtitle">Acceso seguro a tus finanzas.</p>
       
-      <!-- BOTONES INICIALES -->
       <div id="auth-buttons">
         <button class="btn-auth" onclick="mostrarFormulario('login')">Iniciar Sesión</button>
         <button class="btn-auth-sec" onclick="mostrarFormulario('register')">Crear Cuenta</button>
       </div>
 
-      <!-- FORMULARIO DE INICIO (FACE ID) -->
       <form id="form-login" style="display:none;" onsubmit="iniciarSesion(event)">
         <input type="email" id="login-email" class="auth-input" placeholder="Tu correo electrónico" autocomplete="username" required>
         <input type="password" id="login-pass" class="auth-input" placeholder="Contraseña" autocomplete="current-password" required>
@@ -154,7 +143,6 @@
         <button type="button" class="btn-text" onclick="mostrarFormulario('none')">← Volver</button>
       </form>
 
-      <!-- FORMULARIO DE REGISTRO -->
       <form id="form-register" style="display:none;" onsubmit="crearCuenta(event)">
         <input type="email" id="reg-email" class="auth-input" placeholder="Nuevo correo" autocomplete="username" required>
         <input type="password" id="reg-pass" class="auth-input" placeholder="Elige contraseña" autocomplete="new-password" required>
@@ -166,7 +154,6 @@
     </div>
   </div>
 
-  <!-- APP PRINCIPAL -->
   <div id="app-main">
     <header>
       <div class="brand">
@@ -177,6 +164,7 @@
     </header>
 
     <main>
+      <!-- BALANCES -->
       <section id="view-home" class="tab-view active">
         <div class="adjust-bar"><span>⚙️ Ajustar Saldos Actuales:</span><button onclick="setInitialFunds()">Ajustar</button></div>
         <div class="balances-grid">
@@ -187,10 +175,11 @@
         <div class="card"><div class="card-header">Últimos Movimientos</div><table style="display:block; overflow-x:auto;"><tbody id="tabla-recientes"></tbody></table></div>
       </section>
 
+      <!-- ASESOR & CHAT AI -->
       <section id="view-advisor" class="tab-view">
         <div class="advisor-header"><div style="font-size:1.15rem; font-weight:800; color:var(--gold-light);">🏛️ Asesor Patrimonial Experto</div></div>
         <div class="rule-box">
-          <div style="font-weight:700; color:var(--gold); margin-bottom:10px;">Estructura de Gasto Mensual (Fijos vs Variables)</div>
+          <div style="font-weight:700; color:var(--gold); margin-bottom:10px;">Estructura de Gasto Mensual</div>
           <div class="rule-bar">
             <div id="bar-needs" class="rule-seg-needs"></div><div id="bar-wants" class="rule-seg-wants"></div><div id="bar-savings" class="rule-seg-savings"></div>
           </div>
@@ -198,12 +187,21 @@
             <span style="color:#60A5FA;">Fijos</span><span style="color:var(--red);">Variables</span><span style="color:var(--gold);">Ahorro</span>
           </div>
         </div>
-        <div class="card"><div class="card-header">Auditoría y Recomendaciones</div><div id="advisor-tips-container"></div></div>
-        <div class="charts-row">
-          <div class="card"><div class="card-header">Por Categorías</div><div class="chart-box"><canvas id="chartCategorias"></canvas></div></div>
+        
+        <!-- NUEVO: CHAT AI -->
+        <div class="card">
+          <div class="card-header">💬 Chat con el Asesor AI</div>
+          <div id="chat-box" style="height: 250px; overflow-y: auto; background: #151515; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 0.85rem; line-height: 1.5;">
+             <div style="color:var(--gold); margin-bottom:8px;"><strong>Asesor:</strong> ¡Hola! Conozco tus cuentas. ¿En qué te puedo ayudar hoy?</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="ai-input" class="input-control" placeholder="Ej: ¿Me puedo gastar 50€ en una cena?" style="margin-bottom:0;">
+            <button class="btn-submit" style="width: auto; padding: 0 20px; margin-top:0;" onclick="enviarMensajeAI()">Enviar</button>
+          </div>
         </div>
       </section>
 
+      <!-- AÑADIR & EXTRACTOS -->
       <section id="view-add" class="tab-view">
         <div class="card">
           <div class="selector-tipo">
@@ -223,8 +221,16 @@
             <button type="submit" class="btn-submit">Guardar Movimiento</button>
           </form>
         </div>
+
+        <!-- NUEVO: LEER EXTRACTO ING -->
+        <div class="card" style="margin-top: 18px;">
+          <div class="card-header">📋 Pegar Extracto Bancario (ING)</div>
+          <textarea id="in-extracto" class="input-control" rows="4" placeholder="Pega aquí las líneas de tu extracto de ING..."></textarea>
+          <button class="btn-submit" style="margin-top:10px; background:var(--blue); color:white;" onclick="procesarExtracto()">Leer y Añadir Movimientos</button>
+        </div>
       </section>
 
+      <!-- METAS -->
       <section id="view-goals" class="tab-view">
         <div class="card">
           <div class="card-header"><span>Huchas y Metas</span><button class="btn-sm-gold" onclick="nuevaMeta()">+ Nueva Meta</button></div>
@@ -232,11 +238,12 @@
         </div>
       </section>
 
+      <!-- HISTORIAL CON EDICIÓN -->
       <section id="view-history" class="tab-view">
         <div class="card">
           <div class="card-header">Historial Completo</div>
           <table style="display:block; overflow-x:auto;">
-            <thead><tr><th>Fecha</th><th>Concepto</th><th>Importe</th><th></th></tr></thead>
+            <thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Importe</th><th>Acciones</th></tr></thead>
             <tbody id="tabla-cuerpo"></tbody>
           </table>
         </div>
@@ -269,15 +276,12 @@
     let tipoActual = 'gasto';
     let movimientos = [], metas = [];
     let saldoBase = { tarjeta: 0.00, efectivo: 0.00 };
-    let chartCatInstance = null;
 
-    // CATEGORÍAS (1 SOLA PALABRA)
     const CATEGORIAS = {
-      gasto: ["Restaurantes", "Ocio", "Supermercado", "Transporte", "Vivienda", "Compras", "Imprevisto", "Vinted"],
-      ingreso: ["Nómina", "Trabajos", "Partidos", "Regalos", "Bizum", "Vinted", "Otros"]
+      gasto: ["Restaurantes", "Ocio", "Deporte", "Vinted", "Supermercado", "Transporte", "Vivienda", "Compras", "Imprevisto"],
+      ingreso: ["Nómina", "Trabajos", "Partidos", "Vinted", "Regalos", "Bizum", "Otros"]
     };
 
-    // UI DEL LOGIN (LIMPIO)
     function mostrarFormulario(tipo) {
       document.getElementById('auth-error').style.display = 'none';
       if(tipo === 'login') {
@@ -297,7 +301,6 @@
 
     function mostrarError(msg) { const err = document.getElementById('auth-error'); err.textContent = msg; err.style.display = 'block'; }
 
-    // SEGURIDAD TOTAL: BLOQUEO OBLIGATORIO (No auto-login)
     auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
     auth.signOut().then(() => {
       document.getElementById('login-screen').style.display = 'flex';
@@ -318,16 +321,12 @@
       .catch(err => mostrarError("Error. ¿Contraseña muy corta o correo en uso?")); 
     }
 
-    function cerrarSesion() {
-      auth.signOut().then(() => location.reload());
-    }
+    function cerrarSesion() { auth.signOut().then(() => location.reload()); }
 
-    // BASE DE DATOS SEPARADA POR USUARIO
     function configurarEntrada(cred) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('app-main').style.display = 'block';
       document.getElementById('user-display-name').textContent = cred.user.email.split('@')[0];
-      
       docRef = db.collection("datos_usuarios_privados").doc(cred.user.uid);
       iniciarApp();
     }
@@ -398,6 +397,67 @@
       cambiarPestana('home');
     }
 
+    // NUEVO: PROCESAR EXTRACTO ING
+    function procesarExtracto() {
+      const texto = document.getElementById('in-extracto').value;
+      if(!texto.trim()) return alert("Pega el texto del extracto primero.");
+      
+      const lineas = texto.split('\n');
+      let count = 0;
+      
+      lineas.forEach(linea => {
+        // Busca patron: Fecha | Concepto | Importe | Saldo (Ej: 12/10/2026 MERCADONA -46,85 €)
+        const match = linea.match(/(\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+([+-]?\d+[.,]\d{2})\s*€/);
+        if(match) {
+          const [d,m,y] = match[1].split('/');
+          const concepto = match[2].trim();
+          const importeNum = parseFloat(match[3].replace('.','').replace(',','.'));
+          const tipo = importeNum < 0 ? 'gasto' : 'ingreso';
+          const importe = Math.abs(importeNum);
+          
+          let categoria = 'Otros';
+          const lowerC = concepto.toLowerCase();
+          if(lowerC.includes('mercadona') || lowerC.includes('carrefour') || lowerC.includes('consum')) categoria = 'Supermercado';
+          else if(lowerC.includes('bizum')) categoria = 'Bizum';
+          else if(lowerC.includes('vinted')) categoria = 'Vinted';
+          else if(lowerC.includes('renfe') || lowerC.includes('uber') || lowerC.includes('repsol')) categoria = 'Transporte';
+          else if(lowerC.includes('restaurante') || lowerC.includes('mcdonalds')) categoria = 'Restaurantes';
+
+          movimientos.unshift({ 
+            id: 'mov_'+Date.now()+Math.random(), 
+            tipo: tipo, 
+            importe: importe, 
+            medio: 'Tarjeta / Banco', 
+            categoria: categoria, 
+            naturaleza: 'Variable',
+            fecha: `${y}-${m}-${d}`, 
+            concepto: concepto 
+          });
+          count++;
+        }
+      });
+      
+      if(count > 0) {
+        guardarEnCloud();
+        alert(`¡Éxito! Se han importado ${count} movimientos. Revisa el Historial para editarlos si es necesario.`);
+        document.getElementById('in-extracto').value = '';
+        cambiarPestana('history');
+      } else {
+        alert("No se detectaron movimientos. Asegúrate de copiar las filas con la Fecha, Concepto e Importe (€).");
+      }
+    }
+
+    // NUEVO: EDITAR MOVIMIENTO
+    function editarMovimiento(id) {
+      const mov = movimientos.find(m => m.id === id);
+      if(!mov) return;
+      const nuevaCat = prompt("Edita la Categoría (Ej: Restaurantes, Supermercado, Ocio...):", mov.categoria);
+      if(nuevaCat) mov.categoria = nuevaCat;
+      const nuevoConc = prompt("Edita el Concepto:", mov.concepto);
+      if(nuevoConc) mov.concepto = nuevoConc;
+      guardarEnCloud();
+    }
+
     function eliminarMovimiento(id) { if(confirm('¿Eliminar?')) { movimientos = movimientos.filter(m => m.id !== id); guardarEnCloud(); } }
 
     function nuevaMeta() {
@@ -412,10 +472,39 @@
     }
     function eliminarMeta(id) { if(confirm('¿Borrar meta?')) { metas = metas.filter(m=>m.id!==id); guardarEnCloud(); } }
 
+    // NUEVO: CHAT AI CON GEMINI
+    async function enviarMensajeAI() {
+      const input = document.getElementById('ai-input');
+      const texto = input.value.trim();
+      if(!texto) return;
+
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerHTML += `<div style="color:white; margin-bottom:8px; text-align:right;"><strong>Tú:</strong> ${texto}</div>`;
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Le pasamos a la IA tus números reales para que opine
+      const contexto = `Actúa como mi asesor financiero experto. Datos de mis cuentas hoy: Tarjeta=${saldoBase.tarjeta}€, Efectivo=${saldoBase.efectivo}€. Mis metas actuales=${JSON.stringify(metas)}. Mis últimos 5 gastos=${JSON.stringify(movimientos.slice(0,5))}. Responde de forma breve, útil y directa a la siguiente pregunta: ${texto}`;
+
+      try {
+        const apiKey = "AQ.Ab8RN6LevSwqqPPVwPphUVNO5JcRG5FKKbVJHIzxMZYdvzNjyg";
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: contexto }] }] })
+        });
+        const data = await res.json();
+        const respuestaAI = data.candidates[0].content.parts[0].text;
+        chatBox.innerHTML += `<div style="color:var(--gold); margin-bottom:8px;"><strong>Asesor:</strong> ${respuestaAI}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch(e) {
+        chatBox.innerHTML += `<div style="color:var(--red); margin-bottom:8px;"><strong>Error:</strong> Problema de conexión con la IA.</div>`;
+      }
+    }
+
     function refrescarTodo() {
       let st = saldoBase.tarjeta, se = saldoBase.efectivo;
       let fijos = 0, variables = 0, mesActual = new Date().toISOString().slice(0,7), ingMes = 0;
-      const catGastos = {};
 
       movimientos.forEach(m => {
         const v = m.importe;
@@ -424,7 +513,6 @@
           if(m.fecha.startsWith(mesActual)) ingMes += v;
         } else {
           m.medio === 'Efectivo' ? se -= v : st -= v;
-          catGastos[m.categoria] = (catGastos[m.categoria]||0) + v;
           if(m.fecha.startsWith(mesActual)) {
             if(m.naturaleza === 'Fijo') fijos += v;
             else variables += v;
@@ -437,12 +525,11 @@
       document.getElementById('kpi-total-efectivo').textContent = formatEUR(se);
 
       const htmlTr = (m,g) => {
-        const tag = g ? (m.naturaleza === 'Fijo' ? '<span class="tag-fijo">Fijo</span>' : '<span class="tag-variable">Var</span>') : '';
-        return `<tr><td style="font-size:0.75rem;">${m.fecha}</td><td><strong>${m.concepto}</strong> ${tag}</td><td class="${g?'red-text':'gold-text'}" style="text-align:right; font-weight:800;">${g?'-':'+'}${formatEUR(m.importe)}</td><td><button class="btn-del" onclick="eliminarMovimiento('${m.id}')">✕</button></td></tr>`;
+        return `<tr><td style="font-size:0.75rem;">${m.fecha}</td><td><strong>${m.concepto}</strong></td><td style="color:var(--gold); font-size:0.75rem;">${m.categoria}</td><td class="${g?'red-text':'gold-text'}" style="text-align:right; font-weight:800;">${g?'-':'+'}${formatEUR(m.importe)}</td><td style="text-align:center;"><button class="btn-edit" onclick="editarMovimiento('${m.id}')">✏️</button><button class="btn-del" onclick="eliminarMovimiento('${m.id}')">✕</button></td></tr>`;
       };
       
-      document.getElementById('tabla-recientes').innerHTML = movimientos.slice(0,4).map(m=>htmlTr(m,m.tipo==='gasto')).join('') || '<tr><td colspan="4" style="color:gray;text-align:center;">Vacío</td></tr>';
-      document.getElementById('tabla-cuerpo').innerHTML = movimientos.map(m=>htmlTr(m,m.tipo==='gasto')).join('') || '<tr><td colspan="4" style="color:gray;text-align:center;">Vacío</td></tr>';
+      document.getElementById('tabla-recientes').innerHTML = movimientos.slice(0,4).map(m=>`<tr><td style="font-size:0.75rem;">${m.fecha}</td><td><strong>${m.concepto}</strong></td><td style="color:var(--gold);">${m.categoria}</td><td class="${m.tipo==='gasto'?'red-text':'gold-text'}" style="text-align:right; font-weight:800;">${m.tipo==='gasto'?'-':'+'}${formatEUR(m.importe)}</td></tr>`).join('') || '<tr><td colspan="4" style="color:gray;text-align:center;">Vacío</td></tr>';
+      document.getElementById('tabla-cuerpo').innerHTML = movimientos.map(m=>htmlTr(m,m.tipo==='gasto')).join('') || '<tr><td colspan="5" style="color:gray;text-align:center;">Vacío</td></tr>';
 
       const base = ingMes > 0 ? ingMes : (fijos + variables);
       const savings = Math.max(0, ingMes - (fijos + variables));
@@ -450,16 +537,6 @@
       document.getElementById('bar-needs').style.width = (base>0 ? (fijos/base)*100 : 0)+'%';
       document.getElementById('bar-wants').style.width = (base>0 ? (variables/base)*100 : 0)+'%';
       document.getElementById('bar-savings').style.width = (base>0 ? (savings/base)*100 : 0)+'%';
-      
-      let tips = '';
-      if(ingMes === 0) tips = '<div class="advice-card">Anota ingresos este mes.</div>';
-      else {
-        if((fijos / base) > 0.5) tips += `<div class="advice-card alert">⚠️ Gastos fijos superan el 50%. Estás apalancado.</div>`;
-        else tips += `<div class="advice-card success">✅ Costes fijos bajo el 50%.</div>`;
-        if((variables / base) > 0.3) tips += `<div class="advice-card alert">🚨 Fuga en variables, reduce ocio.</div>`;
-        if((savings / base) >= 0.2) tips += `<div class="advice-card success">🌟 Ahorras más del 20%.</div>`;
-      }
-      document.getElementById('advisor-tips-container').innerHTML = tips;
 
       document.getElementById('goals-container').innerHTML = metas.map(m => {
         const pct = Math.min(100, Math.round((m.current/m.target)*100));
@@ -467,12 +544,6 @@
         <div class="goal-progress-bg"><div class="goal-progress-bar" style="width:${pct}%"></div></div>
         <button class="btn-sm-gold" onclick="aportarMeta('${m.id}')">Aportar</button> <button class="btn-del" onclick="eliminarMeta('${m.id}')">✕</button></div>`;
       }).join('') || '<div style="color:gray;">Sin metas</div>';
-
-      if(chartCatInstance) chartCatInstance.destroy();
-      chartCatInstance = new Chart(document.getElementById('chartCategorias').getContext('2d'), {
-        type: 'doughnut', data: { labels: Object.keys(catGastos).length?Object.keys(catGastos):['Nada'], datasets: [{data: Object.values(catGastos).length?Object.values(catGastos):[1], backgroundColor: ['#D4AF37','#E53935','#3B82F6','#FFA000','#C62828'], borderWidth: 0}] },
-        options: { responsive:true, maintainAspectRatio:false, cutout:'70%', plugins:{legend:{position:'bottom', labels:{color:'#9E9E9E'}}} }
-      });
     }
   </script>
 </body>
